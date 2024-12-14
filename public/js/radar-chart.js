@@ -1,29 +1,49 @@
-// Set up SVG
-const width = 800;
-const height = 800;
-const margin = 50;
+// Configuration object for chart settings
+const CONFIG = {
+    width: 800,
+    height: 800,
+    margin: 50,
+    colors: {
+        defaultSegment: '#f0f0f0',
+        stroke: '#fff',
+        axis: '#ddd',
+        point: '#000',
+        medianMin: '#ff0000',
+        medianMax: '#00ff00'
+    },
+    text: {
+        minFontSize: 10,
+        maxFontSize: 14,
+        fontFamily: 'Arial'
+    },
+    rings: {
+        bereich: { inner: 0.72, outer: 0.8 },
+        aspekt: { inner: 0.65, outer: 0.72 },
+        frage: { inner: 0.59, outer: 0.65 },
+        radar: { size: 0.57 }
+    }
+};
+
+// Helper functions
+const calculateRadius = () => Math.min(CONFIG.width, CONFIG.height) / 2;
 
 // Function to draw a ring
 function drawRing(data, innerRadius, outerRadius, className) {
-    // Get the main SVG and its center group
     const svg = d3.select('#chart-container svg');
     const g = svg.select('g');
     
-    const radius = Math.min(width, height) / 2;
+    const radius = calculateRadius();
     innerRadius = radius * innerRadius;
     outerRadius = radius * outerRadius;
 
-    // Create pie layout
     const pie = d3.pie()
         .value(d => d)
         .sort(null);
 
-    // Create arc generator
     const arc = d3.arc()
         .innerRadius(innerRadius)
         .outerRadius(outerRadius);
 
-    // Create arcs
     const arcs = g.selectAll(`.${className}`)
         .data(pie(data.counts))
         .enter()
@@ -34,59 +54,40 @@ function drawRing(data, innerRadius, outerRadius, className) {
     arcs.append('path')
         .attr('d', arc)
         .attr('fill', (d, i) => {
-            // Only color the Bereich ring with medium-bright colors
             if (className === 'bereich') {
                 const hue = (i / data.labels.length) * 360;
-                return d3.hsl(hue, 0.5, 0.75); // Medium saturation (0.5) and lightness (0.75) for balanced colors
+                return d3.hsl(hue, 0.5, 0.75);
             }
-            return '#f0f0f0';
+            return CONFIG.colors.defaultSegment;
         })
-        .attr('stroke', '#fff')
+        .attr('stroke', CONFIG.colors.stroke)
         .attr('stroke-width', 2);
 
     // Add labels
     arcs.each(function(d, i) {
         const label = data.labels[i];
-        
-        // Calculate the middle radius for text path
         const midRadius = (innerRadius + outerRadius) / 2;
-        
-        // Calculate font size based on ring width (with min and max limits)
         const ringWidth = outerRadius - innerRadius;
-        const minFontSize = 10;
-        const maxFontSize = 14;
-        const fontSize = Math.min(maxFontSize, Math.max(minFontSize, ringWidth * 0.4));
+        const fontSize = Math.min(
+            CONFIG.text.maxFontSize, 
+            Math.max(CONFIG.text.minFontSize, ringWidth * 0.4)
+        );
         
-        // Create unique id for text path
         const textPathId = `textPath-${className}-${i}`;
-        
-        // Calculate the middle angle for better text positioning
         const midAngle = (d.startAngle + d.endAngle) / 2;
-        
-        // Check if the segment is in the lower half (between 90° and 270°)
         const isLowerHalf = midAngle > Math.PI/2 && midAngle < 3*Math.PI/2;
 
-        // Create the curved path for text
         const g = d3.select(this);
+        const pathData = isLowerHalf 
+            ? createArcPath(midRadius, midAngle, 0.2, -0.2)
+            : createArcPath(midRadius, midAngle, -0.2, 0.2);
+
         g.append('path')
             .attr('id', textPathId)
-            .attr('d', isLowerHalf ? `
-                M ${midRadius * Math.cos(midAngle - Math.PI/2 + 0.2)} 
-                  ${midRadius * Math.sin(midAngle - Math.PI/2 + 0.2)}
-                A ${midRadius} ${midRadius} 0 0 0
-                  ${midRadius * Math.cos(midAngle - Math.PI/2 - 0.2)}
-                  ${midRadius * Math.sin(midAngle - Math.PI/2 - 0.2)}
-            ` : `
-                M ${midRadius * Math.cos(midAngle - Math.PI/2 - 0.2)} 
-                  ${midRadius * Math.sin(midAngle - Math.PI/2 - 0.2)}
-                A ${midRadius} ${midRadius} 0 0 1
-                  ${midRadius * Math.cos(midAngle - Math.PI/2 + 0.2)}
-                  ${midRadius * Math.sin(midAngle - Math.PI/2 + 0.2)}
-            `)
+            .attr('d', pathData)
             .style('fill', 'none')
             .style('stroke', 'none');
 
-        // Add the text along the path
         g.append('text')
             .append('textPath')
             .attr('xlink:href', `#${textPathId}`)
@@ -94,100 +95,123 @@ function drawRing(data, innerRadius, outerRadius, className) {
             .attr('text-anchor', 'middle')
             .attr('dominant-baseline', 'middle')
             .style('font-size', `${fontSize}px`)
-            .style('font-family', 'Arial')
-            .text(label);
+            .style('font-family', CONFIG.text.fontFamily)
+            .text(label)
+            .attr('transform', !isLowerHalf ? 'rotate(180)' : '');
     });
+}
+
+function createArcPath(radius, angle, start, end) {
+    return `
+        M ${radius * Math.cos(angle - Math.PI/2 + start)} 
+          ${radius * Math.sin(angle - Math.PI/2 + start)}
+        A ${radius} ${radius} 0 0 ${start < end ? 1 : 0}
+          ${radius * Math.cos(angle - Math.PI/2 + end)}
+          ${radius * Math.sin(angle - Math.PI/2 + end)}
+    `;
 }
 
 // Function to draw the radar chart for Frage values
 function drawRadarChart(data, parentG, size) {
-    if (!data || !data.values || !Array.isArray(data.values)) {
-        console.error('Invalid data structure:', data);
+    if (!validateRadarData(data)) {
         return;
     }
 
-    // Create scales
+    const radius = calculateRadius() * size;
+    const scales = createRadarScales(data, radius);
+    
+    drawAxisLines(parentG, data, scales);
+    drawConcentricCircles(parentG, scales.radius);
+    drawDataPoints(parentG, data, scales);
+}
+
+function validateRadarData(data) {
+    if (!data?.values?.length) {
+        console.error('Invalid data structure:', data);
+        return false;
+    }
+    return true;
+}
+
+function createRadarScales(data, radius) {
     const angleScale = d3.scaleLinear()
         .domain([0, data.values.length])
         .range([0, 2 * Math.PI]);
-
-    const radius = Math.min(width, height) / 2 * size;
 
     const radiusScale = d3.scaleLinear()
         .domain([0, 10])
         .range([0, radius]);
 
-    // Size scale for points based on value count
     const sizeScale = d3.scaleLinear()
         .domain([0, d3.max(data.values.map(arr => d3.max(arr)))])
         .range([3, 8]);  // Min size 3px, max size 8px
 
-    // Draw axis lines
+    return { angle: angleScale, radius: radiusScale, size: sizeScale };
+}
+
+function drawAxisLines(parentG, data, scales) {
     data.values.forEach((item, i) => {
         if (!item || typeof item !== 'object') {
             console.warn('Invalid item at index', i, ':', item);
             return;
         }
 
-        const angle = angleScale(i);
-        const x2 = radius * Math.cos(angle - Math.PI / 2);
-        const y2 = radius * Math.sin(angle - Math.PI / 2);
+        const angle = scales.angle(i);
+        const x2 = scales.radius.range()[1] * Math.cos(angle - Math.PI / 2);
+        const y2 = scales.radius.range()[1] * Math.sin(angle - Math.PI / 2);
         
         parentG.append('line')
             .attr('x1', 0)
             .attr('y1', 0)
             .attr('x2', x2)
             .attr('y2', y2)
-            .attr('stroke', '#ddd')
+            .attr('stroke', CONFIG.colors.axis)
             .attr('stroke-width', 1);
     });
+}
 
-    // Draw concentric circles for value scale
+function drawConcentricCircles(parentG, radiusScale) {
     const circles = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
     circles.forEach(value => {
         const r = radiusScale(value);
         
-        // Draw circle
         parentG.append('circle')
             .attr('cx', 0)
             .attr('cy', 0)
             .attr('r', r)
             .attr('fill', 'none')
-            .attr('stroke', '#ddd')
+            .attr('stroke', CONFIG.colors.axis)
             .attr('stroke-width', 1)
             .attr('stroke-dasharray', '3,3');
     });
+}
 
-    // Create a group for the points to ensure they're on top
+function drawDataPoints(parentG, data, scales) {
     const pointsGroup = parentG.append('g')
         .attr('class', 'points-group');
 
-    // Plot data points
     data.values.forEach((values, i) => {
         if (!Array.isArray(values)) {
             console.warn(`Invalid data item at index ${i}:`, values);
             return;
         }
 
-        // Get the angles for this segment
-        const angle = angleScale(i);
-        const nextAngle = angleScale(i + 1);
+        const angle = scales.angle(i);
+        const nextAngle = scales.angle(i + 1);
         
-        // Plot individual points for each value
         values.forEach((count, value) => {
             for (let j = 0; j < count; j++) {
-                // Calculate random angle within the segment
                 const randomAngle = angle + (Math.random() * (nextAngle - angle));
-                const r = radiusScale(value);
+                const r = scales.radius(value);
                 const x = r * Math.cos(randomAngle - Math.PI / 2);
                 const y = r * Math.sin(randomAngle - Math.PI / 2);
 
                 pointsGroup.append('circle')
                     .attr('cx', x)
                     .attr('cy', y)
-                    .attr('r', 2)  // Smaller points
-                    .attr('fill', '#000')
-                    .attr('opacity', 1);  // Full opacity
+                    .attr('r', 2)
+                    .attr('fill', CONFIG.colors.point)
+                    .attr('opacity', 1);
             }
         });
     });
@@ -218,15 +242,13 @@ function calculateMedian(values) {
 
 // Function to draw median lines
 function drawMedianLines(data, parentG, size) {
-    if (!data || !data.values || !Array.isArray(data.values)) {
+    if (!data?.values?.length) {
         console.error('Invalid data structure:', data);
         return;
     }
 
-    const radius = Math.min(width, height) / 2 * size;
+    const radius = calculateRadius() * size;
     const numPoints = data.values.length;
-
-    // Create scales
     const angleScale = d3.scaleLinear()
         .domain([0, numPoints])
         .range([0, 2 * Math.PI]);
@@ -236,115 +258,127 @@ function drawMedianLines(data, parentG, size) {
         .range([0, radius]);
 
     // Calculate medians and points
-    const medianPoints = data.values.map((values, i) => {
-        const median = calculateMedian(values);
-        // Calculate the exact middle angle between this axis and the next
-        const currentAngle = (2 * Math.PI * i) / numPoints;
-        const nextAngle = (2 * Math.PI * (i + 1)) / numPoints;
-        const middleAngle = (currentAngle + nextAngle) / 2;
-        
-        const r = radiusScale(median);
-        return {
-            x: r * Math.cos(middleAngle - Math.PI / 2),
-            y: r * Math.sin(middleAngle - Math.PI / 2),
-            median: median
-        };
-    });
+    const medianPoints = data.values.map((values, i) => ({
+        ...calculateMedianPoint(values, i, numPoints, radiusScale),
+        median: calculateMedian(values)
+    }));
 
-    // Find min and max medians
-    const minMedian = Math.min(...medianPoints.map(p => p.median));
-    const maxMedian = Math.max(...medianPoints.map(p => p.median));
-
-    // Color scale from red (min) to green (max)
+    const { minMedian, maxMedian } = findMedianRange(medianPoints);
     const colorScale = d3.scaleLinear()
         .domain([minMedian, maxMedian])
-        .range(['#ff0000', '#00ff00']);
+        .range([CONFIG.colors.medianMin, CONFIG.colors.medianMax]);
 
-    // Create line segments between points
-    for (let i = 0; i < medianPoints.length; i++) {
-        const current = medianPoints[i];
-        const next = medianPoints[(i + 1) % medianPoints.length];
+    drawMedianConnections(parentG, medianPoints, colorScale);
+    drawMedianDots(parentG, medianPoints, colorScale);
+}
 
-        // Create gradient for this segment
+function calculateMedianPoint(values, index, totalPoints, radiusScale) {
+    const median = calculateMedian(values);
+    const currentAngle = (2 * Math.PI * index) / totalPoints;
+    const nextAngle = (2 * Math.PI * (index + 1)) / totalPoints;
+    const middleAngle = (currentAngle + nextAngle) / 2;
+    
+    const r = radiusScale(median);
+    return {
+        x: r * Math.cos(middleAngle - Math.PI / 2),
+        y: r * Math.sin(middleAngle - Math.PI / 2)
+    };
+}
+
+function findMedianRange(points) {
+    return {
+        minMedian: Math.min(...points.map(p => p.median)),
+        maxMedian: Math.max(...points.map(p => p.median))
+    };
+}
+
+function drawMedianConnections(parentG, points, colorScale) {
+    points.forEach((current, i) => {
+        const next = points[(i + 1) % points.length];
         const gradientId = `gradient-${i}`;
-        const gradient = parentG.append('linearGradient')
-            .attr('id', gradientId)
-            .attr('gradientUnits', 'userSpaceOnUse')
-            .attr('x1', current.x)
-            .attr('y1', current.y)
-            .attr('x2', next.x)
-            .attr('y2', next.y);
-
-        gradient.append('stop')
-            .attr('offset', '0%')
-            .attr('stop-color', colorScale(current.median));
-
-        gradient.append('stop')
-            .attr('offset', '100%')
-            .attr('stop-color', colorScale(next.median));
-
-        // Draw line segment
-        parentG.append('line')
-            .attr('x1', current.x)
-            .attr('y1', current.y)
-            .attr('x2', next.x)
-            .attr('y2', next.y)
-            .attr('stroke', `url(#${gradientId})`)
-            .attr('stroke-width', 2)
-            .attr('stroke-linecap', 'round');
-    }
-
-    // Add dots at median points
-    medianPoints.forEach((point, i) => {
-        const dotColor = colorScale(point.median);
         
+        const gradient = createGradient(parentG, gradientId, current, next, colorScale);
+        drawConnection(parentG, current, next, gradientId);
+    });
+}
+
+function createGradient(parentG, id, start, end, colorScale) {
+    const gradient = parentG.append('linearGradient')
+        .attr('id', id)
+        .attr('gradientUnits', 'userSpaceOnUse')
+        .attr('x1', start.x)
+        .attr('y1', start.y)
+        .attr('x2', end.x)
+        .attr('y2', end.y);
+
+    gradient.append('stop')
+        .attr('offset', '0%')
+        .attr('stop-color', colorScale(start.median));
+
+    gradient.append('stop')
+        .attr('offset', '100%')
+        .attr('stop-color', colorScale(end.median));
+
+    return gradient;
+}
+
+function drawConnection(parentG, start, end, gradientId) {
+    parentG.append('line')
+        .attr('x1', start.x)
+        .attr('y1', start.y)
+        .attr('x2', end.x)
+        .attr('y2', end.y)
+        .attr('stroke', `url(#${gradientId})`)
+        .attr('stroke-width', 2)
+        .attr('stroke-linecap', 'round');
+}
+
+function drawMedianDots(parentG, points, colorScale) {
+    points.forEach(point => {
         parentG.append('circle')
             .attr('cx', point.x)
             .attr('cy', point.y)
             .attr('r', 4)
-            .attr('fill', dotColor);
+            .attr('fill', colorScale(point.median));
     });
 }
 
 // Function to update visualization with new data
 function updateVisualization(data) {
-    // Clear existing visualization
     const container = document.getElementById('chart-container');
     container.innerHTML = '';
 
-    // Create new SVG
-    const svg = d3.select('#chart-container')
+    const svg = createSvg(container);
+    const g = createCenterGroup(svg);
+    
+    // Draw all components
+    drawRing(data.bereichData, CONFIG.rings.bereich.inner, CONFIG.rings.bereich.outer, 'bereich');
+    drawRing(data.aspektData, CONFIG.rings.aspekt.inner, CONFIG.rings.aspekt.outer, 'aspekt');
+    drawRing(data.frageData, CONFIG.rings.frage.inner, CONFIG.rings.frage.outer, 'frage');
+    drawRadarChart(data.frageData, g, CONFIG.rings.radar.size);
+    drawMedianLines(data.frageData, g, CONFIG.rings.radar.size);
+}
+
+function createSvg(container) {
+    const svg = d3.select(container)
         .append('svg')
-        .attr('width', width)
-        .attr('height', height)
+        .attr('width', CONFIG.width)
+        .attr('height', CONFIG.height)
         .attr('xmlns', 'http://www.w3.org/2000/svg')
         .attr('xmlns:xlink', 'http://www.w3.org/1999/xlink')
         .style('background-color', '#ffffff');
 
-    // Add a background rect
     svg.append('rect')
-        .attr('width', width)
-        .attr('height', height)
+        .attr('width', CONFIG.width)
+        .attr('height', CONFIG.height)
         .attr('fill', '#ffffff');
 
-    // Create center group for all visualizations
-    const g = svg.append('g')
-        .attr('transform', `translate(${width / 2}, ${height / 2})`);
-    
-    // Draw outer ring (Bereich)
-    drawRing(data.bereichData, 0.72, 0.8, 'bereich');
-    
-    // Draw middle ring (Aspekt)
-    drawRing(data.aspektData, 0.65, 0.72, 'aspekt');
+    return svg;
+}
 
-    // Draw inner ring (Frage)
-    drawRing(data.frageData, 0.59, 0.65, 'frage');
-
-    // Draw radar chart within the inner ring
-    drawRadarChart(data.frageData, g, 0.57);
-    
-    // Draw median lines
-    drawMedianLines(data.frageData, g, 0.57);
+function createCenterGroup(svg) {
+    return svg.append('g')
+        .attr('transform', `translate(${CONFIG.width / 2}, ${CONFIG.height / 2})`);
 }
 
 // Add event listeners for file handling
