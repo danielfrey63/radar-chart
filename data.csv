@@ -1,0 +1,316 @@
+Bereich,Aspekt,Frage,Team,Wert
+Zusammenarbeit,Kommunikation,Problemoffenheit,Team A,7
+Zusammenarbeit,Kommunikation,Problemoffenheit,Team B,4
+Zusammenarbeit,Kommunikation,Problemoffenheit,Team C,8
+Zusammenarbeit,Kommunikation,Problemoffenheit,Team D,5
+Zusammenarbeit,Kommunikation,Problemoffenheit,Team E,9
+Zusammenarbeit,Kommunikation,Problemoffenheit,Team F,6
+Zusammenarbeit,Kommunikation,Problemoffenheit,Team G,3
+Zusammenarbeit,Kommunikation,Problemoffenheit,Team H,8
+Zusammenarbeit,Kommunikation,Problemoffenheit,Team I,7
+Zusammenarbeit,Kommunikation,Problemoffenheit,Team J,5
+Zusammenarbeit,Kommunikation,Problemoffenheit,Team K,9
+Zusammenarbeit,Kommunikation,Problemoffenheit,Team L,4
+Zusammenarbeit,Kommunikation,Problemoffenheit,Team M,6
+Zusammenarbeit,Kommunikation,Problemoffenheit,Team N,8
+Zusammenarbeit,Kommunikation,Problemoffenheit,Team O,7
+Zusammenarbeit,Kommunikation,Meetingkultur,Team A,6
+Zusammenarbeit,Kommunikation,Meetingkultur,Team B,5
+Zusammenarbeit,Kommunikation,Meetingkultur,Team C,7
+Zusammenarbeit,Kommunikation,Meetingkultur,Team D,4
+Zusammenarbeit,Kommunikation,Meetingkultur,Team E,8
+Zusammenarbeit,Kommunikation,Meetingkultur,Team F,6
+Zusammenarbeit,Kommunikation,Meetingkultur,Team G,3
+Zusammenarbeit,Kommunikation,Meetingkultur,Team H,7
+Zusammenarbeit,Kommunikation,Meetingkultur,Team I,8
+Zusammenarbeit,Kommunikation,Meetingkultur,Team J,5
+Zusammenarbeit,Kommunikation,Meetingkultur,Team K,9
+Zusammenarbeit,Kommunikation,Meetingkultur,Team L,4
+Zusammenarbeit,Kommunikation,Meetingkultur,Team M,6
+Zusammenarbeit,Kommunikation,Meetingkultur,Team N,7
+Zusammenarbeit,Kommunikation,Meetingkultur,Team O,8
+Zusammenarbeit,Teamdynamik,Hilfsbereitschaft,Team A,8
+Zusammenarbeit,Teamdynamik,Hilfsbereitschaft,Team B,5
+Zusammenarbeit,Teamdynamik,Hilfsbereitschaft,Team C,9
+Zusammenarbeit,Teamdynamik,Hilfsbereitschaft,Team D,6
+Zusammenarbeit,Teamdynamik,Hilfsbereitschaft,Team E,8
+Zusammenarbeit,Teamdynamik,Hilfsbereitschaft,Team F,7
+Zusammenarbeit,Teamdynamik,Hilfsbereitschaft,Team G,4
+Zusammenarbeit,Teamdynamik,Hilfsbereitschaft,Team H,9
+Zusammenarbeit,Teamdynamik,Hilfsbereitschaft,Team I,7
+Zusammenarbeit,Teamdynamik,Hilfsbereitschaft,Team J,6
+Zusammenarbeit,Teamdynamik,Hilfsbereitschaft,Team K,8
+Zusammenarbeit,Teamdynamik,Hilfsbereitschaft,Team L,5
+Zusammenarbeit,Teamdynamik,Hilfsbereitschaft,Team M,7
+Zusammenarbeit,Teamdynamik,Hilfsbereitschaft,Team N,9
+Zusammenarbeit,Teamdynamik,Hilfsbereitschaft,Team O,8
+Prozesse,Sprint Planning,Planungsqualität,Team A,7
+Prozesse,Sprint Planning,Planungsqualität,Team B,5
+Prozesse,Sprint Planning,Planungsqualität,Team C,8
+Prozesse,Sprint Planning,Planungsqualität,Team D,6
+Prozesse,Sprint Planning,Planungsqualität,Team E,9
+Prozesse,Sprint Planning,Planungsqualität,Team F,7
+Prozesse,Sprint Planning,Planungsqualität,Team G,4
+Prozesse,Sprint Planning,Planungsqualität,Team H,8
+Prozesse,Sprint Planning,Planungsqualität,Team I,7
+Prozesse,Sprint Planning,Planungsqualität,Team J,6
+Prozesse,Sprint Planning,Planungsqualität,Team K,9
+Prozesse,Sprint Planning,Planungsqualität,Team L,5
+Prozesse,Sprint Planning,Planungsqualität,Team M,7
+Prozesse,Sprint Planning,Planungsqualität,Team N,8
+Prozesse,Sprint Planning,Planungsqualität,Team O,7
+Prozesse,Sprint Planning,Schätzgenauigkeit,Team A,5
+Prozesse,Sprint Planning,Schätzgenauigkeit,Team B,4
+Prozesse,Sprint Planning,Schätzgenauigkeit,Team C,6
+Prozesse,Sprint Planning,Schätzgenauigkeit,Team D,5
+Prozesse,Sprint Planning,Schätzgenauigkeit,Team E,7
+Prozesse,Sprint Planning,Schätzgenauigkeit,Team F,5
+Prozesse,Sprint Planning,Schätzgenauigkeit,Team G,3
+Prozesse,Sprint Planning,Schätzgenauigkeit,Team H,6
+Prozesse,Sprint Planning,Schätzgenauigkeit,Team I,5
+Prozesse,Sprint Planning,Schätzgenauigkeit,Team J,4
+Prozesse,Sprint Planning,Schätzgenauigkeit,Team K,7
+Prozesse,Sprint Planning,Schätzgenauigkeit,Team L,4
+Prozesse,Sprint Planning,Schätzgenauigkeit,Team M,5
+Prozesse,Sprint Planning,Schätzgenauigkeit,Team N,6
+Prozesse,Sprint Planning,Schätzgenauigkeit,Team O,5
+Prozesse,Retrospektiven,Verbesserungen,Team A,6
+Prozesse,Retrospektiven,Verbesserungen,Team B,4
+Prozesse,Retrospektiven,Verbesserungen,Team C,7
+Prozesse,Retrospektiven,Verbesserungen,Team D,5
+Prozesse,Retrospektiven,Verbesserungen,Team E,8
+Prozesse,Retrospektiven,Verbesserungen,Team F,6
+Prozesse,Retrospektiven,Verbesserungen,Team G,3
+Prozesse,Retrospektiven,Verbesserungen,Team H,7
+Prozesse,Retrospektiven,Verbesserungen,Team I,6
+Prozesse,Retrospektiven,Verbesserungen,Team J,5
+Prozesse,Retrospektiven,Verbesserungen,Team K,8
+Prozesse,Retrospektiven,Verbesserungen,Team L,4
+Prozesse,Retrospektiven,Verbesserungen,Team M,6
+Prozesse,Retrospektiven,Verbesserungen,Team N,7
+Prozesse,Retrospektiven,Verbesserungen,Team O,6
+Prozesse,Daily Scrum,Effektivität,Team A,7
+Prozesse,Daily Scrum,Effektivität,Team B,5
+Prozesse,Daily Scrum,Effektivität,Team C,8
+Prozesse,Daily Scrum,Effektivität,Team D,6
+Prozesse,Daily Scrum,Effektivität,Team E,9
+Prozesse,Daily Scrum,Effektivität,Team F,7
+Prozesse,Daily Scrum,Effektivität,Team G,4
+Prozesse,Daily Scrum,Effektivität,Team H,8
+Prozesse,Daily Scrum,Effektivität,Team I,7
+Prozesse,Daily Scrum,Effektivität,Team J,6
+Prozesse,Daily Scrum,Effektivität,Team K,9
+Prozesse,Daily Scrum,Effektivität,Team L,5
+Prozesse,Daily Scrum,Effektivität,Team M,7
+Prozesse,Daily Scrum,Effektivität,Team N,8
+Prozesse,Daily Scrum,Effektivität,Team O,7
+Technische Praktiken,Code Reviews,Häufigkeit,Team A,8
+Technische Praktiken,Code Reviews,Häufigkeit,Team B,6
+Technische Praktiken,Code Reviews,Häufigkeit,Team C,9
+Technische Praktiken,Code Reviews,Häufigkeit,Team D,7
+Technische Praktiken,Code Reviews,Häufigkeit,Team E,9
+Technische Praktiken,Code Reviews,Häufigkeit,Team F,8
+Technische Praktiken,Code Reviews,Häufigkeit,Team G,5
+Technische Praktiken,Code Reviews,Häufigkeit,Team H,9
+Technische Praktiken,Code Reviews,Häufigkeit,Team I,8
+Technische Praktiken,Code Reviews,Häufigkeit,Team J,7
+Technische Praktiken,Code Reviews,Häufigkeit,Team K,9
+Technische Praktiken,Code Reviews,Häufigkeit,Team L,6
+Technische Praktiken,Code Reviews,Häufigkeit,Team M,8
+Technische Praktiken,Code Reviews,Häufigkeit,Team N,9
+Technische Praktiken,Code Reviews,Häufigkeit,Team O,8
+Technische Praktiken,Code Reviews,Qualität,Team A,7
+Technische Praktiken,Code Reviews,Qualität,Team B,5
+Technische Praktiken,Code Reviews,Qualität,Team C,8
+Technische Praktiken,Code Reviews,Qualität,Team D,6
+Technische Praktiken,Code Reviews,Qualität,Team E,9
+Technische Praktiken,Code Reviews,Qualität,Team F,7
+Technische Praktiken,Code Reviews,Qualität,Team G,4
+Technische Praktiken,Code Reviews,Qualität,Team H,8
+Technische Praktiken,Code Reviews,Qualität,Team I,7
+Technische Praktiken,Code Reviews,Qualität,Team J,6
+Technische Praktiken,Code Reviews,Qualität,Team K,9
+Technische Praktiken,Code Reviews,Qualität,Team L,5
+Technische Praktiken,Code Reviews,Qualität,Team M,7
+Technische Praktiken,Code Reviews,Qualität,Team N,8
+Technische Praktiken,Code Reviews,Qualität,Team O,7
+Technische Praktiken,Automatisierung,Testabdeckung,Team A,6
+Technische Praktiken,Automatisierung,Testabdeckung,Team B,4
+Technische Praktiken,Automatisierung,Testabdeckung,Team C,7
+Technische Praktiken,Automatisierung,Testabdeckung,Team D,5
+Technische Praktiken,Automatisierung,Testabdeckung,Team E,8
+Technische Praktiken,Automatisierung,Testabdeckung,Team F,6
+Technische Praktiken,Automatisierung,Testabdeckung,Team G,3
+Technische Praktiken,Automatisierung,Testabdeckung,Team H,7
+Technische Praktiken,Automatisierung,Testabdeckung,Team I,6
+Technische Praktiken,Automatisierung,Testabdeckung,Team J,5
+Technische Praktiken,Automatisierung,Testabdeckung,Team K,8
+Technische Praktiken,Automatisierung,Testabdeckung,Team L,4
+Technische Praktiken,Automatisierung,Testabdeckung,Team M,6
+Technische Praktiken,Automatisierung,Testabdeckung,Team N,7
+Technische Praktiken,Automatisierung,Testabdeckung,Team O,6
+Technische Praktiken,Automatisierung,CI/CD,Team A,7
+Technische Praktiken,Automatisierung,CI/CD,Team B,5
+Technische Praktiken,Automatisierung,CI/CD,Team C,8
+Technische Praktiken,Automatisierung,CI/CD,Team D,6
+Technische Praktiken,Automatisierung,CI/CD,Team E,9
+Technische Praktiken,Automatisierung,CI/CD,Team F,7
+Technische Praktiken,Automatisierung,CI/CD,Team G,4
+Technische Praktiken,Automatisierung,CI/CD,Team H,8
+Technische Praktiken,Automatisierung,CI/CD,Team I,7
+Technische Praktiken,Automatisierung,CI/CD,Team J,6
+Technische Praktiken,Automatisierung,CI/CD,Team K,9
+Technische Praktiken,Automatisierung,CI/CD,Team L,5
+Technische Praktiken,Automatisierung,CI/CD,Team M,7
+Technische Praktiken,Automatisierung,CI/CD,Team N,8
+Technische Praktiken,Automatisierung,CI/CD,Team O,7
+Technische Praktiken,Dokumentation,Aktualität,Team A,5
+Technische Praktiken,Dokumentation,Aktualität,Team B,3
+Technische Praktiken,Dokumentation,Aktualität,Team C,6
+Technische Praktiken,Dokumentation,Aktualität,Team D,4
+Technische Praktiken,Dokumentation,Aktualität,Team E,7
+Technische Praktiken,Dokumentation,Aktualität,Team F,5
+Technische Praktiken,Dokumentation,Aktualität,Team G,2
+Technische Praktiken,Dokumentation,Aktualität,Team H,6
+Technische Praktiken,Dokumentation,Aktualität,Team I,5
+Technische Praktiken,Dokumentation,Aktualität,Team J,4
+Technische Praktiken,Dokumentation,Aktualität,Team K,7
+Technische Praktiken,Dokumentation,Aktualität,Team L,3
+Technische Praktiken,Dokumentation,Aktualität,Team M,5
+Technische Praktiken,Dokumentation,Aktualität,Team N,6
+Technische Praktiken,Dokumentation,Aktualität,Team O,5
+Kundenorientierung,Feedback,Geschwindigkeit,Team A,6
+Kundenorientierung,Feedback,Geschwindigkeit,Team B,4
+Kundenorientierung,Feedback,Geschwindigkeit,Team C,7
+Kundenorientierung,Feedback,Geschwindigkeit,Team D,5
+Kundenorientierung,Feedback,Geschwindigkeit,Team E,8
+Kundenorientierung,Feedback,Geschwindigkeit,Team F,6
+Kundenorientierung,Feedback,Geschwindigkeit,Team G,3
+Kundenorientierung,Feedback,Geschwindigkeit,Team H,7
+Kundenorientierung,Feedback,Geschwindigkeit,Team I,6
+Kundenorientierung,Feedback,Geschwindigkeit,Team J,5
+Kundenorientierung,Feedback,Geschwindigkeit,Team K,8
+Kundenorientierung,Feedback,Geschwindigkeit,Team L,4
+Kundenorientierung,Feedback,Geschwindigkeit,Team M,6
+Kundenorientierung,Feedback,Geschwindigkeit,Team N,7
+Kundenorientierung,Feedback,Geschwindigkeit,Team O,6
+Kundenorientierung,Feedback,Integration,Team A,7
+Kundenorientierung,Feedback,Integration,Team B,5
+Kundenorientierung,Feedback,Integration,Team C,8
+Kundenorientierung,Feedback,Integration,Team D,6
+Kundenorientierung,Feedback,Integration,Team E,9
+Kundenorientierung,Feedback,Integration,Team F,7
+Kundenorientierung,Feedback,Integration,Team G,4
+Kundenorientierung,Feedback,Integration,Team H,8
+Kundenorientierung,Feedback,Integration,Team I,7
+Kundenorientierung,Feedback,Integration,Team J,6
+Kundenorientierung,Feedback,Integration,Team K,9
+Kundenorientierung,Feedback,Integration,Team L,5
+Kundenorientierung,Feedback,Integration,Team M,7
+Kundenorientierung,Feedback,Integration,Team N,8
+Kundenorientierung,Feedback,Integration,Team O,7
+Kundenorientierung,Requirements,Klarheit,Team A,6
+Kundenorientierung,Requirements,Klarheit,Team B,4
+Kundenorientierung,Requirements,Klarheit,Team C,7
+Kundenorientierung,Requirements,Klarheit,Team D,5
+Kundenorientierung,Requirements,Klarheit,Team E,8
+Kundenorientierung,Requirements,Klarheit,Team F,6
+Kundenorientierung,Requirements,Klarheit,Team G,3
+Kundenorientierung,Requirements,Klarheit,Team H,7
+Kundenorientierung,Requirements,Klarheit,Team I,6
+Kundenorientierung,Requirements,Klarheit,Team J,5
+Kundenorientierung,Requirements,Klarheit,Team K,8
+Kundenorientierung,Requirements,Klarheit,Team L,4
+Kundenorientierung,Requirements,Klarheit,Team M,6
+Kundenorientierung,Requirements,Klarheit,Team N,7
+Kundenorientierung,Requirements,Klarheit,Team O,6
+Führung,Selbstorganisation,Entscheidungen,Team A,7
+Führung,Selbstorganisation,Entscheidungen,Team B,5
+Führung,Selbstorganisation,Entscheidungen,Team C,8
+Führung,Selbstorganisation,Entscheidungen,Team D,6
+Führung,Selbstorganisation,Entscheidungen,Team E,9
+Führung,Selbstorganisation,Entscheidungen,Team F,7
+Führung,Selbstorganisation,Entscheidungen,Team G,4
+Führung,Selbstorganisation,Entscheidungen,Team H,8
+Führung,Selbstorganisation,Entscheidungen,Team I,7
+Führung,Selbstorganisation,Entscheidungen,Team J,6
+Führung,Selbstorganisation,Entscheidungen,Team K,9
+Führung,Selbstorganisation,Entscheidungen,Team L,5
+Führung,Selbstorganisation,Entscheidungen,Team M,7
+Führung,Selbstorganisation,Entscheidungen,Team N,8
+Führung,Selbstorganisation,Entscheidungen,Team O,7
+Führung,Selbstorganisation,Eigeninitiative,Team A,8
+Führung,Selbstorganisation,Eigeninitiative,Team B,5
+Führung,Selbstorganisation,Eigeninitiative,Team C,9
+Führung,Selbstorganisation,Eigeninitiative,Team D,6
+Führung,Selbstorganisation,Eigeninitiative,Team E,9
+Führung,Selbstorganisation,Eigeninitiative,Team F,8
+Führung,Selbstorganisation,Eigeninitiative,Team G,4
+Führung,Selbstorganisation,Eigeninitiative,Team H,9
+Führung,Selbstorganisation,Eigeninitiative,Team I,8
+Führung,Selbstorganisation,Eigeninitiative,Team J,7
+Führung,Selbstorganisation,Eigeninitiative,Team K,9
+Führung,Selbstorganisation,Eigeninitiative,Team L,5
+Führung,Selbstorganisation,Eigeninitiative,Team M,8
+Führung,Selbstorganisation,Eigeninitiative,Team N,9
+Führung,Selbstorganisation,Eigeninitiative,Team O,8
+Führung,Ressourcen,Verfügbarkeit,Team A,6
+Führung,Ressourcen,Verfügbarkeit,Team B,4
+Führung,Ressourcen,Verfügbarkeit,Team C,7
+Führung,Ressourcen,Verfügbarkeit,Team D,5
+Führung,Ressourcen,Verfügbarkeit,Team E,8
+Führung,Ressourcen,Verfügbarkeit,Team F,6
+Führung,Ressourcen,Verfügbarkeit,Team G,3
+Führung,Ressourcen,Verfügbarkeit,Team H,7
+Führung,Ressourcen,Verfügbarkeit,Team I,6
+Führung,Ressourcen,Verfügbarkeit,Team J,5
+Führung,Ressourcen,Verfügbarkeit,Team K,8
+Führung,Ressourcen,Verfügbarkeit,Team L,4
+Führung,Ressourcen,Verfügbarkeit,Team M,6
+Führung,Ressourcen,Verfügbarkeit,Team N,7
+Führung,Ressourcen,Verfügbarkeit,Team O,6
+Innovation,Experimente,Häufigkeit,Team A,5
+Innovation,Experimente,Häufigkeit,Team B,3
+Innovation,Experimente,Häufigkeit,Team C,6
+Innovation,Experimente,Häufigkeit,Team D,4
+Innovation,Experimente,Häufigkeit,Team E,7
+Innovation,Experimente,Häufigkeit,Team F,5
+Innovation,Experimente,Häufigkeit,Team G,2
+Innovation,Experimente,Häufigkeit,Team H,6
+Innovation,Experimente,Häufigkeit,Team I,5
+Innovation,Experimente,Häufigkeit,Team J,4
+Innovation,Experimente,Häufigkeit,Team K,7
+Innovation,Experimente,Häufigkeit,Team L,3
+Innovation,Experimente,Häufigkeit,Team M,5
+Innovation,Experimente,Häufigkeit,Team N,6
+Innovation,Experimente,Häufigkeit,Team O,5
+Innovation,Lernen,Weiterbildung,Team A,7
+Innovation,Lernen,Weiterbildung,Team B,5
+Innovation,Lernen,Weiterbildung,Team C,8
+Innovation,Lernen,Weiterbildung,Team D,6
+Innovation,Lernen,Weiterbildung,Team E,9
+Innovation,Lernen,Weiterbildung,Team F,7
+Innovation,Lernen,Weiterbildung,Team G,4
+Innovation,Lernen,Weiterbildung,Team H,8
+Innovation,Lernen,Weiterbildung,Team I,7
+Innovation,Lernen,Weiterbildung,Team J,6
+Innovation,Lernen,Weiterbildung,Team K,9
+Innovation,Lernen,Weiterbildung,Team L,5
+Innovation,Lernen,Weiterbildung,Team M,7
+Innovation,Lernen,Weiterbildung,Team N,8
+Innovation,Lernen,Weiterbildung,Team O,7
+Innovation,Technologie,Modernität,Team A,8
+Innovation,Technologie,Modernität,Team B,6
+Innovation,Technologie,Modernität,Team C,9
+Innovation,Technologie,Modernität,Team D,7
+Innovation,Technologie,Modernität,Team E,9
+Innovation,Technologie,Modernität,Team F,8
+Innovation,Technologie,Modernität,Team G,5
+Innovation,Technologie,Modernität,Team H,9
+Innovation,Technologie,Modernität,Team I,8
+Innovation,Technologie,Modernität,Team J,7
+Innovation,Technologie,Modernität,Team K,9
+Innovation,Technologie,Modernität,Team L,6
+Innovation,Technologie,Modernität,Team M,8
+Innovation,Technologie,Modernität,Team N,9
+Innovation,Technologie,Modernität,Team O,8

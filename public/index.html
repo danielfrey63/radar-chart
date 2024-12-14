@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Radar Chart</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            padding: 20px;
+        }
+        .button-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .chart-container {
+            width: 800px;
+            height: 800px;
+            margin: 20px;
+            border: 1px solid #ccc;
+            position: relative;
+            background-color: #fff;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #csv-file-input {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Radar Chart Visualization</h1>
+        <div class="button-container">
+            <input type="file" id="csv-file-input" accept=".csv">
+            <button id="load-csv">Load CSV</button>
+            <button id="reset">Reset</button>
+            <button id="download-svg">Download SVG</button>
+        </div>
+        <div id="chart-container" class="chart-container"></div>
+    </div>
+    <script src="/js/radar-chart.js"></script>
+</body>
+</html>
