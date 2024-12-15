@@ -131,28 +131,31 @@ function drawRadarBackgrounds(parentG, data, scales) {
         const angle = angleScale(i) - Math.PI/2;
         const nextAngle = angleScale(i + 1) - Math.PI/2;
         
-        // Draw a separate path for each value level
-        values.forEach((count, valueIndex) => {
-            if (count > 0 && valueIndex > 0 && values[valueIndex - 1] > 0) {
-                const outerRadius = radiusScale(valueIndex);
-                const innerRadius = radiusScale(valueIndex - 1);
-                
-                // Create path for this level
-                const path = d3.path();
-                path.moveTo(innerRadius * Math.cos(angle), innerRadius * Math.sin(angle));
-                path.lineTo(outerRadius * Math.cos(angle), outerRadius * Math.sin(angle));
-                path.arc(0, 0, outerRadius, angle, nextAngle);
-                path.lineTo(innerRadius * Math.cos(nextAngle), innerRadius * Math.sin(nextAngle));
-                path.arc(0, 0, innerRadius, nextAngle, angle, true);
-                
-                // Draw the segment level
-                parentG.append('path')
-                    .attr('d', path.toString())
-                    .attr('fill', getBackgroundColor(i))
-                    .attr('opacity', 0.9)
-                    .attr('stroke', 'none');
-            }
-        });
+        // Find min and max non-zero value indices
+        let minIndex = values.findIndex(v => v > 0);
+        let maxIndex = values.length - 1;
+        while (maxIndex > minIndex && values[maxIndex] === 0) maxIndex--;
+        
+        if (minIndex !== -1) {
+            // Draw a single path from min to max
+            const outerRadius = radiusScale(maxIndex);
+            const innerRadius = radiusScale(minIndex);
+            
+            // Create path for the entire segment
+            const path = d3.path();
+            path.moveTo(innerRadius * Math.cos(angle), innerRadius * Math.sin(angle));
+            path.lineTo(outerRadius * Math.cos(angle), outerRadius * Math.sin(angle));
+            path.arc(0, 0, outerRadius, angle, nextAngle);
+            path.lineTo(innerRadius * Math.cos(nextAngle), innerRadius * Math.sin(nextAngle));
+            path.arc(0, 0, innerRadius, nextAngle, angle, true);
+            
+            // Draw the segment
+            parentG.append('path')
+                .attr('d', path.toString())
+                .attr('fill', getBackgroundColor(i))
+                .attr('opacity', 0.9)
+                .attr('stroke', 'none');
+        }
     });
 }
 
@@ -435,48 +438,53 @@ document.addEventListener('DOMContentLoaded', () => {
     const fileInput = document.getElementById('csv-file-input');
     const loadButton = document.getElementById('load-csv');
     const resetButton = document.getElementById('reset');
+    const downloadButton = document.getElementById('download-svg');
 
-    if (!fileInput || !loadButton || !resetButton) {
-        console.error('Required elements not found');
-        return;
+    // Function to handle file loading
+    async function handleFileLoad(file) {
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            try {
+                const response = await fetch('/data', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'text/csv'
+                    },
+                    body: e.target.result
+                });
+
+                if (!response.ok) {
+                    throw new Error('Upload failed');
+                }
+
+                const data = await response.json();
+                updateVisualization(data);
+            } catch (error) {
+                console.error('Error uploading file:', error);
+                alert('Error uploading file. Please make sure it\'s a valid CSV with the correct format.');
+            }
+        };
+        reader.readAsText(file);
     }
 
-    loadButton.addEventListener('click', () => {
-        fileInput.click();
+    // Handle file selection
+    fileInput.addEventListener('change', (event) => {
+        handleFileLoad(event.target.files[0]);
     });
 
-    fileInput.addEventListener('change', (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = async (e) => {
-                try {
-                    const response = await fetch('/data', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'text/csv'
-                        },
-                        body: e.target.result
-                    });
-
-                    if (!response.ok) {
-                        throw new Error('Upload failed');
-                    }
-
-                    const data = await response.json();
-                    updateVisualization(data);
-                } catch (error) {
-                    console.error('Error uploading file:', error);
-                    alert('Error uploading file. Please make sure it\'s a valid CSV with the correct format.');
-                }
-            };
-            reader.readAsText(file);
-        }
+    // Handle load button click
+    loadButton.addEventListener('click', () => {
+        // Reset the file input to ensure change event fires even for the same file
+        fileInput.value = '';
+        fileInput.click();
     });
 
     resetButton.addEventListener('click', async () => {
         try {
-            const response = await fetch('/data');
+            // Fetch default data with reset flag
+            const response = await fetch('/data?reset=true');
             if (!response.ok) {
                 throw new Error('Failed to load default data');
             }
