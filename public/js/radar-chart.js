@@ -111,6 +111,53 @@ function createArcPath(radius, angle, start, end) {
     `;
 }
 
+// Function to draw colored backgrounds for radar segments
+function drawRadarBackgrounds(parentG, data, scales) {
+    const { angle: angleScale, radius: radiusScale } = scales;
+    const numPoints = data.values.length;
+
+    // Create lighter versions of the bereich colors for backgrounds
+    const getBackgroundColor = (index) => {
+        const hue = (index / numPoints) * 360;
+        return d3.hsl(hue, 0.5, 0.9); // Lighter version of the bereich color
+    };
+
+    // Create background segments
+    data.values.forEach((values, i) => {
+        if (!Array.isArray(values)) return;
+
+        const angle = angleScale(i) - Math.PI/2;
+        const nextAngle = angleScale(i + 1) - Math.PI/2;
+        
+        // Draw a separate path for each value level
+        values.forEach((count, valueIndex) => {
+            if (count > 1) {
+                const outerRadius = radiusScale(valueIndex);
+                const innerRadius = valueIndex > 0 ? radiusScale(valueIndex - 1) : 0;
+                
+                // Create path for this level
+                const path = d3.path();
+                path.moveTo(innerRadius * Math.cos(angle), innerRadius * Math.sin(angle));
+                path.lineTo(outerRadius * Math.cos(angle), outerRadius * Math.sin(angle));
+                path.arc(0, 0, outerRadius, angle, nextAngle);
+                path.lineTo(innerRadius * Math.cos(nextAngle), innerRadius * Math.sin(nextAngle));
+                if (innerRadius > 0) {
+                    path.arc(0, 0, innerRadius, nextAngle, angle, true);
+                } else {
+                    path.lineTo(0, 0);
+                }
+                
+                // Draw the segment level
+                parentG.append('path')
+                    .attr('d', path.toString())
+                    .attr('fill', getBackgroundColor(i))
+                    .attr('opacity', 0.9)
+                    .attr('stroke', 'none');
+            }
+        });
+    });
+}
+
 // Function to draw the radar chart for Frage values
 function drawRadarChart(data, parentG, size) {
     if (!validateRadarData(data)) {
@@ -120,6 +167,7 @@ function drawRadarChart(data, parentG, size) {
     const radius = calculateRadius() * size;
     const scales = createRadarScales(data, radius);
     
+    drawRadarBackgrounds(parentG, data, scales);
     drawAxisLines(parentG, data, scales);
     drawConcentricCircles(parentG, scales.radius);
     drawDataPoints(parentG, data, scales);
