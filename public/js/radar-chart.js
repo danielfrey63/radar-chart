@@ -44,7 +44,6 @@ function drawRing(data, innerRadius, outerRadius, className) {
 
     // Calculate the minimum font size for all segments in this ring
     const fontSize = calculateRingFontSize(data, innerRadius, outerRadius);
-    console.log(`Using font size for ${className}: ${fontSize}px`);
 
     const pie = d3.pie()
         .value(d => d)
@@ -129,10 +128,6 @@ function calculateRingFontSize(data, innerRadius, outerRadius) {
     let maxLabel = '';
     let limitingArcLength = 0;
     
-    console.log(`\nAnalyzing ring from ${innerRadius} to ${outerRadius}:`);
-    console.log(`Total segments: ${data.labels.length}, Total count: ${totalCount}`);
-    console.log(`Ring height: ${Math.round(ringHeight)}px`);
-    
     // Test each label
     data.labels.forEach((fullLabel, i) => {
         const label = fullLabel.split('.').pop();
@@ -166,13 +161,6 @@ function calculateRingFontSize(data, innerRadius, outerRadius) {
             bbox = temp.node().getBBox();
         }
         
-        console.log(`\nLabel: "${label}"`);
-        console.log(`  Level ${parentSegments + 1}/${totalLevels}, Radius: ${Math.round(segmentRadius)}px`);
-        console.log(`  Angle: ${Math.round(segmentAngle * 180 / Math.PI)}° (count: ${data.counts[i]})`);
-        console.log(`  Original size: ${Math.round(originalWidth)}x${Math.round(bbox.height)}px at ${CONFIG.text.maxFontSize}px font`);
-        console.log(`  Available space: ${Math.round(arcLength)}x${Math.round(ringHeight)}px`);
-        console.log(`  Final font size: ${fontSize}px, Final size: ${Math.round(bbox.width)}x${Math.round(bbox.height)}px`);
-        
         if (bbox.width > maxWidth) {
             maxWidth = bbox.width;
             maxLabel = label;
@@ -186,15 +174,6 @@ function calculateRingFontSize(data, innerRadius, outerRadius) {
             limitingArcLength = arcLength;
         }
     });
-    
-    if (minFontSize < CONFIG.text.maxFontSize) {
-        console.log(`\nSummary:`);
-        console.log(`Longest label: "${maxLabel}" (${Math.round(maxWidth)}px at ${CONFIG.text.maxFontSize}px font)`);
-        console.log(`Font size limited to ${minFontSize}px by label "${limitingLabel}" ` +
-                   `(${limitingFactor} constraint). ` +
-                   `Text size: ${Math.round(limitingWidth)}x${Math.round(limitingHeight)}px, ` +
-                   `Available space: ${Math.round(limitingArcLength)}x${Math.round(ringHeight)}px`);
-    }
     
     temp.remove();
     return minFontSize;
@@ -517,13 +496,7 @@ function createSvg(container) {
         .attr('width', CONFIG.width)
         .attr('height', CONFIG.height)
         .attr('xmlns', 'http://www.w3.org/2000/svg')
-        .attr('xmlns:xlink', 'http://www.w3.org/1999/xlink')
-        .style('background-color', '#ffffff');
-
-    svg.append('rect')
-        .attr('width', CONFIG.width)
-        .attr('height', CONFIG.height)
-        .attr('fill', '#ffffff');
+        .attr('xmlns:xlink', 'http://www.w3.org/1999/xlink');
 
     return svg;
 }
@@ -539,6 +512,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const loadButton = document.getElementById('load-csv');
     const resetButton = document.getElementById('reset');
     const downloadButton = document.getElementById('download-svg');
+    const exportSvgButton = document.getElementById('export-svg');
+    const exportPngButton = document.getElementById('export-png');
 
     // Function to handle file loading
     async function handleFileLoad(file) {
@@ -595,6 +570,104 @@ document.addEventListener('DOMContentLoaded', () => {
             alert('Error loading default data');
         }
     });
+
+    // SVG download functionality
+    function exportSVG() {
+        const svgElement = document.querySelector('#chart-container svg');
+        if (!svgElement) {
+            alert('No chart found to export');
+            return;
+        }
+
+        const serializer = new XMLSerializer();
+        let svgString = serializer.serializeToString(svgElement);
+        
+        // Add XML declaration and SVG namespace
+        svgString = '<?xml version="1.0" standalone="no"?>\r\n' + svgString;
+
+        const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'radar-chart.svg';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }
+
+    // PNG export functionality
+    function exportPNG() {
+        try {
+            const svgElement = document.querySelector('#chart-container svg');
+            if (!svgElement) {
+                alert('No chart found to export');
+                return;
+            }
+
+            // Get SVG data
+            const serializer = new XMLSerializer();
+            const svgString = serializer.serializeToString(svgElement);
+            const svgUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgString);
+
+            // Create canvas
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const scale = 2; // Double resolution
+            
+            canvas.width = svgElement.width.baseVal.value * scale;
+            canvas.height = svgElement.height.baseVal.value * scale;
+            
+            // Create image
+            const img = new Image();
+            
+            img.onload = function() {
+                try {
+                    // Set scale for higher resolution
+                    ctx.scale(scale, scale);
+                    
+                    // Draw image
+                    ctx.drawImage(img, 0, 0);
+                    
+                    // Convert to PNG and download
+                    canvas.toBlob(function(blob) {
+                        const url = URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.download = 'radar-chart.png';
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        URL.revokeObjectURL(url);
+                    }, 'image/png');
+                } catch (drawError) {
+                    console.error('Error drawing image:', drawError);
+                    alert('Error creating PNG: ' + drawError.message);
+                }
+            };
+            
+            img.onerror = function() {
+                console.error('Error loading SVG');
+                alert('Error loading SVG for conversion');
+            };
+            
+            img.src = svgUrl;
+            
+        } catch (error) {
+            console.error('Error in PNG export:', error);
+            alert('Error exporting to PNG: ' + error.message);
+        }
+    }
+
+    // Initialize export buttons
+    if (exportSvgButton) {
+        exportSvgButton.addEventListener('click', exportSVG);
+    }
+
+    if (exportPngButton) {
+        exportPngButton.addEventListener('click', exportPNG);
+    }
 });
 
 // Initial data load
@@ -606,20 +679,6 @@ fetch('/data')
     .catch(error => {
         console.error('Error loading initial data:', error);
     });
-
-// SVG download functionality
-document.getElementById('download-svg').addEventListener('click', function() {
-    const svgData = document.querySelector('#chart-container svg').outerHTML;
-    const blob = new Blob([svgData], { type: 'image/svg+xml' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'radar-chart.svg';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-});
 
 function createArcPath(radius, angle, start, end) {
     return `
