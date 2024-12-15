@@ -131,13 +131,16 @@ function drawRadarBackgrounds(parentG, data, scales) {
         const angle = angleScale(i) - Math.PI/2;
         const nextAngle = angleScale(i + 1) - Math.PI/2;
         
-        // Find min and max non-zero value indices
-        let minIndex = values.findIndex(v => v > 0);
-        let maxIndex = values.length - 1;
-        while (maxIndex > minIndex && values[maxIndex] === 0) maxIndex--;
-        
-        if (minIndex !== -1) {
-            // Draw a single path from min to max
+        // Find absolute min and max indices where values exist
+        const nonZeroIndices = values.map((v, idx) => ({ value: v, index: idx }))
+                                    .filter(item => item.value > 0)
+                                    .map(item => item.index);
+
+        if (nonZeroIndices.length > 0) {
+            const minIndex = Math.min(...nonZeroIndices);
+            const maxIndex = Math.max(...nonZeroIndices);
+
+            // Draw a single continuous segment from min to max, including gaps
             const outerRadius = radiusScale(maxIndex);
             const innerRadius = radiusScale(minIndex);
             
@@ -149,7 +152,7 @@ function drawRadarBackgrounds(parentG, data, scales) {
             path.lineTo(innerRadius * Math.cos(nextAngle), innerRadius * Math.sin(nextAngle));
             path.arc(0, 0, innerRadius, nextAngle, angle, true);
             
-            // Draw the segment
+            // Draw the segment with consistent color and opacity
             parentG.append('path')
                 .attr('d', path.toString())
                 .attr('fill', getBackgroundColor(i))
