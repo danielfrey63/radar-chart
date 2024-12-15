@@ -27,6 +27,12 @@ const CONFIG = {
 // Helper functions
 const calculateRadius = () => Math.min(CONFIG.width, CONFIG.height) / 2;
 
+// Function to get segment color
+const getSegmentColor = (index, total) => {
+    const hue = (index / total) * 360;
+    return d3.hsl(hue, 0.5, 0.75);
+};
+
 // Function to draw a ring
 function drawRing(data, innerRadius, outerRadius, className) {
     const svg = d3.select('#chart-container svg');
@@ -55,8 +61,7 @@ function drawRing(data, innerRadius, outerRadius, className) {
         .attr('d', arc)
         .attr('fill', (d, i) => {
             if (className === 'bereich') {
-                const hue = (i / data.labels.length) * 360;
-                return d3.hsl(hue, 0.5, 0.75);
+                return getSegmentColor(i, data.labels.length);
             }
             return CONFIG.colors.defaultSegment;
         })
@@ -118,15 +123,22 @@ function drawRadarBackgrounds(parentG, data, scales) {
     const { angle: angleScale, radius: radiusScale } = scales;
     const numPoints = data.values.length;
 
-    // Create lighter versions of the bereich colors for backgrounds
-    const getBackgroundColor = (index) => {
-        const hue = (index / numPoints) * 360;
-        return d3.hsl(hue, 0.5, 0.9); // Lighter version of the bereich color
-    };
+    // Get unique Bereich names and create index mapping
+    const uniqueBereiche = [...new Set(
+        data.labels.map(label => label.split('.')[0])
+    )];
+    const bereichToIndex = Object.fromEntries(
+        uniqueBereiche.map((name, index) => [name, index])
+    );
 
     // Create background segments
     data.values.forEach((values, i) => {
         if (!Array.isArray(values)) return;
+
+        // Get the parent Bereich name and its index
+        const fullLabel = data.labels[i];
+        const bereichName = fullLabel.split('.')[0];
+        const bereichIndex = bereichToIndex[bereichName];
 
         const angle = angleScale(i) - Math.PI/2;
         const nextAngle = angleScale(i + 1) - Math.PI/2;
@@ -152,11 +164,13 @@ function drawRadarBackgrounds(parentG, data, scales) {
             path.lineTo(innerRadius * Math.cos(nextAngle), innerRadius * Math.sin(nextAngle));
             path.arc(0, 0, innerRadius, nextAngle, angle, true);
             
-            // Draw the segment with consistent color and opacity
+            // Draw the segment with parent color and 50% opacity
+            const color = getSegmentColor(bereichIndex, uniqueBereiche.length);
+            
             parentG.append('path')
                 .attr('d', path.toString())
-                .attr('fill', getBackgroundColor(i))
-                .attr('opacity', 0.9)
+                .attr('fill', color)
+                .attr('opacity', 0.5) // 50% transparency
                 .attr('stroke', 'none');
         }
     });
