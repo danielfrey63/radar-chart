@@ -12,7 +12,7 @@ const CONFIG = {
         medianMax: '#00ff00'
     },
     text: {
-        minFontSize: 10,
+        minFontSize: 6,
         maxFontSize: 14,
         fontFamily: 'Arial'
     },
@@ -41,6 +41,10 @@ function drawRing(data, innerRadius, outerRadius, className) {
     const radius = calculateRadius();
     innerRadius = radius * innerRadius;
     outerRadius = radius * outerRadius;
+
+    // Calculate the minimum font size for all segments in this ring
+    const fontSize = calculateRingFontSize(data, innerRadius, outerRadius);
+    console.log(`Using font size for ${className}: ${fontSize}px`);
 
     const pie = d3.pie()
         .value(d => d)
@@ -74,20 +78,18 @@ function drawRing(data, innerRadius, outerRadius, className) {
         // Extract only the Frage part from the compound label (last part after last dot)
         const label = fullLabel.split('.').pop();
         const midRadius = (innerRadius + outerRadius) / 2;
-        const ringWidth = outerRadius - innerRadius;
-        const fontSize = Math.min(
-            CONFIG.text.maxFontSize, 
-            Math.max(CONFIG.text.minFontSize, ringWidth * 0.4)
-        );
-        
         const textPathId = `textPath-${className}-${i}`;
         const midAngle = (d.startAngle + d.endAngle) / 2;
+        const segmentAngle = d.endAngle - d.startAngle;
         const isLowerHalf = midAngle > Math.PI/2 && midAngle < 3*Math.PI/2;
+
+        // Use 40% of the segment angle for text path, but cap at 0.4 radians
+        const arcOffset = Math.min(segmentAngle * 0.4, 0.4);
 
         const g = d3.select(this);
         const pathData = isLowerHalf 
-            ? createArcPath(midRadius, midAngle, 0.2, -0.2)
-            : createArcPath(midRadius, midAngle, -0.2, 0.2);
+            ? createArcPath(midRadius, midAngle, arcOffset, -arcOffset)
+            : createArcPath(midRadius, midAngle, -arcOffset, arcOffset);
 
         g.append('path')
             .attr('id', textPathId)
@@ -108,14 +110,94 @@ function drawRing(data, innerRadius, outerRadius, className) {
     });
 }
 
-function createArcPath(radius, angle, start, end) {
-    return `
-        M ${radius * Math.cos(angle - Math.PI/2 + start)} 
-          ${radius * Math.sin(angle - Math.PI/2 + start)}
-        A ${radius} ${radius} 0 0 ${start < end ? 1 : 0}
-          ${radius * Math.cos(angle - Math.PI/2 + end)}
-          ${radius * Math.sin(angle - Math.PI/2 + end)}
-    `;
+// Calculate minimum font size needed for all labels in a ring
+function calculateRingFontSize(data, innerRadius, outerRadius) {
+    const temp = d3.select('svg')
+        .append('text')
+        .style('visibility', 'hidden')
+        .style('font-family', CONFIG.text.fontFamily);
+
+    const totalCount = data.counts.reduce((a, b) => a + b, 0);
+    const ringHeight = (outerRadius - innerRadius) * 0.7;
+    
+    let minFontSize = CONFIG.text.maxFontSize;
+    let limitingLabel = '';
+    let limitingFactor = '';
+    let limitingWidth = 0;
+    let limitingHeight = 0;
+    let maxWidth = 0;
+    let maxLabel = '';
+    let limitingArcLength = 0;
+    
+    console.log(`\nAnalyzing ring from ${innerRadius} to ${outerRadius}:`);
+    console.log(`Total segments: ${data.labels.length}, Total count: ${totalCount}`);
+    console.log(`Ring height: ${Math.round(ringHeight)}px`);
+    
+    // Test each label
+    data.labels.forEach((fullLabel, i) => {
+        const label = fullLabel.split('.').pop();
+        temp.text(label);
+        
+        // Calculate the actual radius for this segment based on its parent
+        const parentSegments = fullLabel.split('.').length - 1; // Number of parent segments
+        const totalLevels = data.labels[0].split('.').length;
+        const segmentRadius = innerRadius + (outerRadius - innerRadius) * (parentSegments + 0.5) / totalLevels;
+        
+        // Calculate actual segment angle based on count
+        const segmentAngle = (2 * Math.PI * data.counts[i]) / totalCount;
+        const arcLength = segmentRadius * segmentAngle * 0.8; // 80% of the actual arc length for this segment
+        
+        let fontSize = CONFIG.text.maxFontSize;
+        temp.style('font-size', fontSize + 'px');
+        let bbox = temp.node().getBBox();
+        let originalWidth = bbox.width;
+        
+        // Reduce font size until text fits
+        while ((bbox.width > arcLength || bbox.height > ringHeight) && fontSize > CONFIG.text.minFontSize) {
+            if (bbox.width > arcLength && bbox.height <= ringHeight) {
+                limitingFactor = 'width';
+            } else if (bbox.height > ringHeight && bbox.width <= arcLength) {
+                limitingFactor = 'height';
+            } else {
+                limitingFactor = 'both';
+            }
+            fontSize--;
+            temp.style('font-size', fontSize + 'px');
+            bbox = temp.node().getBBox();
+        }
+        
+        console.log(`\nLabel: "${label}"`);
+        console.log(`  Level ${parentSegments + 1}/${totalLevels}, Radius: ${Math.round(segmentRadius)}px`);
+        console.log(`  Angle: ${Math.round(segmentAngle * 180 / Math.PI)}° (count: ${data.counts[i]})`);
+        console.log(`  Original size: ${Math.round(originalWidth)}x${Math.round(bbox.height)}px at ${CONFIG.text.maxFontSize}px font`);
+        console.log(`  Available space: ${Math.round(arcLength)}x${Math.round(ringHeight)}px`);
+        console.log(`  Final font size: ${fontSize}px, Final size: ${Math.round(bbox.width)}x${Math.round(bbox.height)}px`);
+        
+        if (bbox.width > maxWidth) {
+            maxWidth = bbox.width;
+            maxLabel = label;
+        }
+        
+        if (fontSize < minFontSize) {
+            minFontSize = fontSize;
+            limitingLabel = label;
+            limitingWidth = bbox.width;
+            limitingHeight = bbox.height;
+            limitingArcLength = arcLength;
+        }
+    });
+    
+    if (minFontSize < CONFIG.text.maxFontSize) {
+        console.log(`\nSummary:`);
+        console.log(`Longest label: "${maxLabel}" (${Math.round(maxWidth)}px at ${CONFIG.text.maxFontSize}px font)`);
+        console.log(`Font size limited to ${minFontSize}px by label "${limitingLabel}" ` +
+                   `(${limitingFactor} constraint). ` +
+                   `Text size: ${Math.round(limitingWidth)}x${Math.round(limitingHeight)}px, ` +
+                   `Available space: ${Math.round(limitingArcLength)}x${Math.round(ringHeight)}px`);
+    }
+    
+    temp.remove();
+    return minFontSize;
 }
 
 // Function to draw colored backgrounds for radar segments
@@ -538,3 +620,13 @@ document.getElementById('download-svg').addEventListener('click', function() {
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
 });
+
+function createArcPath(radius, angle, start, end) {
+    return `
+        M ${radius * Math.cos(angle - Math.PI/2 + start)} 
+          ${radius * Math.sin(angle - Math.PI/2 + start)}
+        A ${radius} ${radius} 0 0 ${start < end ? 1 : 0}
+          ${radius * Math.cos(angle - Math.PI/2 + end)}
+          ${radius * Math.sin(angle - Math.PI/2 + end)}
+    `;
+}

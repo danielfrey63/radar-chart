@@ -86,12 +86,34 @@ function processCSVData(results) {
 
     // Get unique Aspekte while maintaining order
     const seenAspekte = new Set();
+    const aspektTotalCounts = new Map(); // Track total counts for each Aspekt
+
+    // First calculate total counts for each Aspekt
+    Array.from(aspektFragen.keys()).forEach(aspektKey => {
+        const [_, aspekt] = aspektKey.split('.');
+        const fragen = aspektFragen.get(aspektKey);
+        let totalCount = 0;
+        
+        // Sum up all occurrences of questions under this Aspekt
+        fragen.forEach(frage => {
+            const frageId = `${aspektKey}.${frage}`;
+            totalCount += frageCounts[frageId] || 0;
+        });
+        
+        if (!aspektTotalCounts.has(aspekt)) {
+            aspektTotalCounts.set(aspekt, totalCount);
+        } else {
+            aspektTotalCounts.set(aspekt, aspektTotalCounts.get(aspekt) + totalCount);
+        }
+    });
+
+    // Now add the Aspekte in order with their total counts
     Array.from(aspektFragen.keys()).forEach(aspektKey => {
         const [_, aspekt] = aspektKey.split('.');
         if (!seenAspekte.has(aspekt)) {
             seenAspekte.add(aspekt);
             aspektData.labels.push(aspekt);
-            aspektData.counts.push(aspektFragen.get(aspektKey).length);
+            aspektData.counts.push(aspektTotalCounts.get(aspekt));
         }
     });
 
