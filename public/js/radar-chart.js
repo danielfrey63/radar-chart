@@ -65,7 +65,9 @@ function drawRing(data, innerRadius, outerRadius, className) {
 
     // Add labels
     arcs.each(function(d, i) {
-        const label = data.labels[i];
+        const fullLabel = data.labels[i];
+        // Extract only the Frage part from the compound label (last part after last dot)
+        const label = fullLabel.split('.').pop();
         const midRadius = (innerRadius + outerRadius) / 2;
         const ringWidth = outerRadius - innerRadius;
         const fontSize = Math.min(
@@ -131,9 +133,9 @@ function drawRadarBackgrounds(parentG, data, scales) {
         
         // Draw a separate path for each value level
         values.forEach((count, valueIndex) => {
-            if (count > 1) {
+            if (count > 0 && valueIndex > 0 && values[valueIndex - 1] > 0) {
                 const outerRadius = radiusScale(valueIndex);
-                const innerRadius = valueIndex > 0 ? radiusScale(valueIndex - 1) : 0;
+                const innerRadius = radiusScale(valueIndex - 1);
                 
                 // Create path for this level
                 const path = d3.path();
@@ -141,11 +143,7 @@ function drawRadarBackgrounds(parentG, data, scales) {
                 path.lineTo(outerRadius * Math.cos(angle), outerRadius * Math.sin(angle));
                 path.arc(0, 0, outerRadius, angle, nextAngle);
                 path.lineTo(innerRadius * Math.cos(nextAngle), innerRadius * Math.sin(nextAngle));
-                if (innerRadius > 0) {
-                    path.arc(0, 0, innerRadius, nextAngle, angle, true);
-                } else {
-                    path.lineTo(0, 0);
-                }
+                path.arc(0, 0, innerRadius, nextAngle, angle, true);
                 
                 // Draw the segment level
                 parentG.append('path')
@@ -247,9 +245,12 @@ function drawDataPoints(parentG, data, scales) {
         const angle = scales.angle(i);
         const nextAngle = scales.angle(i + 1);
         
+        const minDistance = Math.PI / 180; // About 1 degree buffer
+        const safeRange = (nextAngle - angle - 2 * minDistance);
+        
         values.forEach((count, value) => {
             for (let j = 0; j < count; j++) {
-                const randomAngle = angle + (Math.random() * (nextAngle - angle));
+                const randomAngle = angle + minDistance + (Math.random() * safeRange);
                 const r = scales.radius(value);
                 const x = r * Math.cos(randomAngle - Math.PI / 2);
                 const y = r * Math.sin(randomAngle - Math.PI / 2);

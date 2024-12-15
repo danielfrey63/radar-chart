@@ -39,40 +39,95 @@ app.get('/data', (req, res) => {
                 const frageCounts = {};
                 const frageValues = {};
 
+                // First pass: collect all unique combinations
+                const bereichAspekte = new Map(); // Map of Bereich to Array of Aspekte
+                const aspektFragen = new Map();   // Map of Bereich.Aspekt to Array of Fragen
+
+                // Helper function to add unique item to array
+                const addUnique = (arr, item) => {
+                    if (!arr.includes(item)) {
+                        arr.push(item);
+                    }
+                    return arr;
+                };
+
+                // First pass to build hierarchy
                 results.forEach(row => {
-                    if (!bereichCounts[row.Bereich]) bereichCounts[row.Bereich] = 0;
-                    if (!aspektCounts[row.Aspekt]) aspektCounts[row.Aspekt] = 0;
-                    if (!frageCounts[row.Frage]) {
-                        frageCounts[row.Frage] = 0;
-                        frageValues[row.Frage] = new Array(10).fill(0); // Initialize array for values 0-9
+                    const bereich = row.Bereich;
+                    const aspekt = row.Aspekt;
+                    const frage = row.Frage;
+
+                    // Initialize hierarchy maps
+                    if (!bereichAspekte.has(bereich)) {
+                        bereichAspekte.set(bereich, []);
                     }
+                    addUnique(bereichAspekte.get(bereich), aspekt);
 
-                    bereichCounts[row.Bereich]++;
-                    aspektCounts[row.Aspekt]++;
-                    frageCounts[row.Frage]++;
+                    const aspektKey = `${bereich}.${aspekt}`;
+                    if (!aspektFragen.has(aspektKey)) {
+                        aspektFragen.set(aspektKey, []);
+                    }
+                    addUnique(aspektFragen.get(aspektKey), frage);
+                });
 
-                    // Track value distribution for each Frage
-                    const value = parseInt(row.Wert) || 0;
-                    if (value >= 0 && value < 10) {
-                        frageValues[row.Frage][value]++;
+                // Second pass: count values
+                results.forEach(row => {
+                    const bereich = row.Bereich;
+                    const aspekt = row.Aspekt;
+                    const frage = row.Frage;
+                    const wert = parseInt(row.Wert);
+
+                    const frageId = `${bereich}.${aspekt}.${frage}`;
+                    if (!frageCounts[frageId]) {
+                        frageCounts[frageId] = 0;
+                        frageValues[frageId] = new Array(10).fill(0);
+                    }
+                    frageCounts[frageId]++;
+                    frageValues[frageId][wert]++;
+                });
+
+                // Convert hierarchy to counts (maintaining order)
+                Array.from(bereichAspekte.entries()).forEach(([bereich, aspekte]) => {
+                    bereichData.labels.push(bereich);
+                    // Count total Fragen for this Bereich
+                    let totalFragen = 0;
+                    aspekte.forEach(aspekt => {
+                        const aspektKey = `${bereich}.${aspekt}`;
+                        totalFragen += aspektFragen.get(aspektKey).length;
+                    });
+                    bereichData.counts.push(totalFragen);
+                });
+
+                // Get unique Aspekte while maintaining order
+                const seenAspekte = new Set();
+                Array.from(aspektFragen.keys()).forEach(aspektKey => {
+                    const [_, aspekt] = aspektKey.split('.');
+                    if (!seenAspekte.has(aspekt)) {
+                        seenAspekte.add(aspekt);
+                        aspektData.labels.push(aspekt);
+                        aspektData.counts.push(aspektFragen.get(aspektKey).length);
                     }
                 });
 
-                // Convert to arrays
-                Object.entries(bereichCounts).forEach(([label, count]) => {
-                    bereichData.labels.push(label);
-                    bereichData.counts.push(count);
+                // Sort and prepare frage data following the hierarchy
+                const orderedFrageIds = [];
+                
+                // Follow the Bereich -> Aspekt -> Frage hierarchy for ordering
+                Array.from(bereichAspekte.entries()).forEach(([bereich, aspekte]) => {
+                    aspekte.forEach(aspekt => {
+                        const aspektKey = `${bereich}.${aspekt}`;
+                        const fragen = aspektFragen.get(aspektKey);
+                        fragen.forEach(frage => {
+                            orderedFrageIds.push(`${bereich}.${aspekt}.${frage}`);
+                        });
+                    });
                 });
 
-                Object.entries(aspektCounts).forEach(([label, count]) => {
-                    aspektData.labels.push(label);
-                    aspektData.counts.push(count);
-                });
-
-                Object.entries(frageCounts).forEach(([label, count]) => {
-                    frageData.labels.push(label);
-                    frageData.counts.push(count);
-                    frageData.values.push(frageValues[label]);
+                // Use the ordered IDs to build frageData
+                orderedFrageIds.forEach(frageId => {
+                    frageData.labels.push(frageId);
+                    frageData.counts.push(frageCounts[frageId]);
+                    frageData.values.push(frageValues[frageId]);
                 });
 
                 res.json({ 
@@ -113,40 +168,95 @@ app.post('/data', (req, res) => {
             const frageCounts = {};
             const frageValues = {};
 
+            // First pass: collect all unique combinations
+            const bereichAspekte = new Map(); // Map of Bereich to Array of Aspekte
+            const aspektFragen = new Map();   // Map of Bereich.Aspekt to Array of Fragen
+
+            // Helper function to add unique item to array
+            const addUnique = (arr, item) => {
+                if (!arr.includes(item)) {
+                    arr.push(item);
+                }
+                return arr;
+            };
+
+            // First pass to build hierarchy
             results.forEach(row => {
-                if (!bereichCounts[row.Bereich]) bereichCounts[row.Bereich] = 0;
-                if (!aspektCounts[row.Aspekt]) aspektCounts[row.Aspekt] = 0;
-                if (!frageCounts[row.Frage]) {
-                    frageCounts[row.Frage] = 0;
-                    frageValues[row.Frage] = new Array(10).fill(0); // Initialize array for values 0-9
+                const bereich = row.Bereich;
+                const aspekt = row.Aspekt;
+                const frage = row.Frage;
+
+                // Initialize hierarchy maps
+                if (!bereichAspekte.has(bereich)) {
+                    bereichAspekte.set(bereich, []);
                 }
+                addUnique(bereichAspekte.get(bereich), aspekt);
 
-                bereichCounts[row.Bereich]++;
-                aspektCounts[row.Aspekt]++;
-                frageCounts[row.Frage]++;
+                const aspektKey = `${bereich}.${aspekt}`;
+                if (!aspektFragen.has(aspektKey)) {
+                    aspektFragen.set(aspektKey, []);
+                }
+                addUnique(aspektFragen.get(aspektKey), frage);
+            });
 
-                // Track value distribution for each Frage
-                const value = parseInt(row.Wert) || 0;
-                if (value >= 0 && value < 10) {
-                    frageValues[row.Frage][value]++;
+            // Second pass: count values
+            results.forEach(row => {
+                const bereich = row.Bereich;
+                const aspekt = row.Aspekt;
+                const frage = row.Frage;
+                const wert = parseInt(row.Wert);
+
+                const frageId = `${bereich}.${aspekt}.${frage}`;
+                if (!frageCounts[frageId]) {
+                    frageCounts[frageId] = 0;
+                    frageValues[frageId] = new Array(10).fill(0);
+                }
+                frageCounts[frageId]++;
+                frageValues[frageId][wert]++;
+            });
+
+            // Convert hierarchy to counts (maintaining order)
+            Array.from(bereichAspekte.entries()).forEach(([bereich, aspekte]) => {
+                bereichData.labels.push(bereich);
+                // Count total Fragen for this Bereich
+                let totalFragen = 0;
+                aspekte.forEach(aspekt => {
+                    const aspektKey = `${bereich}.${aspekt}`;
+                    totalFragen += aspektFragen.get(aspektKey).length;
+                });
+                bereichData.counts.push(totalFragen);
+            });
+
+            // Get unique Aspekte while maintaining order
+            const seenAspekte = new Set();
+            Array.from(aspektFragen.keys()).forEach(aspektKey => {
+                const [_, aspekt] = aspektKey.split('.');
+                if (!seenAspekte.has(aspekt)) {
+                    seenAspekte.add(aspekt);
+                    aspektData.labels.push(aspekt);
+                    aspektData.counts.push(aspektFragen.get(aspektKey).length);
                 }
             });
 
-            // Convert to arrays
-            Object.entries(bereichCounts).forEach(([label, count]) => {
-                bereichData.labels.push(label);
-                bereichData.counts.push(count);
+            // Sort and prepare frage data following the hierarchy
+            const orderedFrageIds = [];
+            
+            // Follow the Bereich -> Aspekt -> Frage hierarchy for ordering
+            Array.from(bereichAspekte.entries()).forEach(([bereich, aspekte]) => {
+                aspekte.forEach(aspekt => {
+                    const aspektKey = `${bereich}.${aspekt}`;
+                    const fragen = aspektFragen.get(aspektKey);
+                    fragen.forEach(frage => {
+                        orderedFrageIds.push(`${bereich}.${aspekt}.${frage}`);
+                    });
+                });
             });
 
-            Object.entries(aspektCounts).forEach(([label, count]) => {
-                aspektData.labels.push(label);
-                aspektData.counts.push(count);
-            });
-
-            Object.entries(frageCounts).forEach(([label, count]) => {
-                frageData.labels.push(label);
-                frageData.counts.push(count);
-                frageData.values.push(frageValues[label]);
+            // Use the ordered IDs to build frageData
+            orderedFrageIds.forEach(frageId => {
+                frageData.labels.push(frageId);
+                frageData.counts.push(frageCounts[frageId]);
+                frageData.values.push(frageValues[frageId]);
             });
 
             res.json({ 
