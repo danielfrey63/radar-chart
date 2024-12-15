@@ -185,9 +185,11 @@ function drawRadarChart(data, parentG, size) {
     const radius = calculateRadius() * size;
     const scales = createRadarScales(data, radius);
     
+    // Draw in correct order: background -> median -> grid -> points
     drawRadarBackgrounds(parentG, data, scales);
     drawAxisLines(parentG, data, scales);
     drawConcentricCircles(parentG, scales.radius);
+    drawMedianLines(data, parentG, size);
     drawDataPoints(parentG, data, scales);
 }
 
@@ -425,7 +427,6 @@ function updateVisualization(data) {
     drawRing(data.aspektData, CONFIG.rings.aspekt.inner, CONFIG.rings.aspekt.outer, 'aspekt');
     drawRing(data.frageData, CONFIG.rings.frage.inner, CONFIG.rings.frage.outer, 'frage');
     drawRadarChart(data.frageData, g, CONFIG.rings.radar.size);
-    drawMedianLines(data.frageData, g, CONFIG.rings.radar.size);
 }
 
 function createSvg(container) {
