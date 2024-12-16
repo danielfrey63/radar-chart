@@ -15,193 +15,126 @@ app.use(express.text({ type: 'text/csv' }));
 
 // Function to process CSV data
 function processCSVData(results) {
+    // Skip header row
+    const dataRows = results.slice(1);
+    
     const bereichData = { labels: [], counts: [] };
     const aspektData = { labels: [], counts: [] };
     const frageData = { labels: [], counts: [], values: [] };
 
-    // Count occurrences for each category
     const bereichCounts = {};
     const aspektCounts = {};
     const frageCounts = {};
     const frageValues = {};
 
-    // First pass: collect all unique combinations
-    const bereichAspekte = new Map(); // Map of Bereich to Array of Aspekte
-    const aspektFragen = new Map();   // Map of Bereich.Aspekt to Array of Fragen
+    // Process each row using array indices instead of column names
+    dataRows.forEach(row => {
+        const bereich = row[0];  // First column (previously Bereich)
+        const aspekt = row[1];   // Second column (previously Aspekt)
+        const frage = row[2];    // Third column (previously Frage)
+        const team = row[3];     // Fourth column (previously Team)
+        const wert = parseInt(row[4], 10);  // Fifth column (previously Wert)
 
-    // Helper function to add unique item to array
-    const addUnique = (arr, item) => {
-        if (!arr.includes(item)) {
-            arr.push(item);
-        }
-        return arr;
-    };
+        // Count Bereich occurrences
+        bereichCounts[bereich] = (bereichCounts[bereich] || 0) + 1;
 
-    // First pass to build hierarchy
-    results.forEach(row => {
-        const bereich = row.Bereich;
-        const aspekt = row.Aspekt;
-        const frage = row.Frage;
-
-        // Initialize hierarchy maps
-        if (!bereichAspekte.has(bereich)) {
-            bereichAspekte.set(bereich, []);
-        }
-        addUnique(bereichAspekte.get(bereich), aspekt);
-
+        // Count Aspekt occurrences with full hierarchy
         const aspektKey = `${bereich}.${aspekt}`;
-        if (!aspektFragen.has(aspektKey)) {
-            aspektFragen.set(aspektKey, []);
+        aspektCounts[aspektKey] = (aspektCounts[aspektKey] || 0) + 1;
+
+        // Count Frage occurrences and track values with full hierarchy
+        const frageKey = `${bereich}.${aspekt}.${frage}`;
+        frageCounts[frageKey] = (frageCounts[frageKey] || 0) + 1;
+        
+        if (!frageValues[frageKey]) {
+            frageValues[frageKey] = new Array(11).fill(0);
         }
-        addUnique(aspektFragen.get(aspektKey), frage);
+        frageValues[frageKey][wert]++;
     });
 
-    // Second pass: count values
-    results.forEach(row => {
-        const bereich = row.Bereich;
-        const aspekt = row.Aspekt;
-        const frage = row.Frage;
-        const wert = parseInt(row.Wert);
-
-        const frageId = `${bereich}.${aspekt}.${frage}`;
-        if (!frageCounts[frageId]) {
-            frageCounts[frageId] = 0;
-            frageValues[frageId] = new Array(10).fill(0);
-        }
-        frageCounts[frageId]++;
-        frageValues[frageId][wert]++;
-    });
-
-    // Convert hierarchy to counts (maintaining order)
-    Array.from(bereichAspekte.entries()).forEach(([bereich, aspekte]) => {
+    // Convert to arrays (maintaining the same structure as before)
+    Object.keys(bereichCounts).sort().forEach(bereich => {
         bereichData.labels.push(bereich);
-        // Count total Fragen for this Bereich
-        let totalFragen = 0;
-        aspekte.forEach(aspekt => {
-            const aspektKey = `${bereich}.${aspekt}`;
-            totalFragen += aspektFragen.get(aspektKey).length;
-        });
-        bereichData.counts.push(totalFragen);
+        bereichData.counts.push(bereichCounts[bereich]);
     });
 
-    // Get unique Aspekte while maintaining order
-    const seenAspekte = new Set();
-    const aspektTotalCounts = new Map(); // Track total counts for each Aspekt
-
-    // First calculate total counts for each Aspekt
-    Array.from(aspektFragen.keys()).forEach(aspektKey => {
-        const [_, aspekt] = aspektKey.split('.');
-        const fragen = aspektFragen.get(aspektKey);
-        let totalCount = 0;
-        
-        // Sum up all occurrences of questions under this Aspekt
-        fragen.forEach(frage => {
-            const frageId = `${aspektKey}.${frage}`;
-            totalCount += frageCounts[frageId] || 0;
-        });
-        
-        if (!aspektTotalCounts.has(aspekt)) {
-            aspektTotalCounts.set(aspekt, totalCount);
-        } else {
-            aspektTotalCounts.set(aspekt, aspektTotalCounts.get(aspekt) + totalCount);
-        }
+    Object.keys(aspektCounts).sort().forEach(aspektKey => {
+        aspektData.labels.push(aspektKey);
+        aspektData.counts.push(aspektCounts[aspektKey]);
     });
 
-    // Now add the Aspekte in order with their total counts
-    Array.from(aspektFragen.keys()).forEach(aspektKey => {
-        const [_, aspekt] = aspektKey.split('.');
-        if (!seenAspekte.has(aspekt)) {
-            seenAspekte.add(aspekt);
-            aspektData.labels.push(aspekt);
-            aspektData.counts.push(aspektTotalCounts.get(aspekt));
-        }
+    Object.keys(frageCounts).sort().forEach(frageKey => {
+        frageData.labels.push(frageKey);
+        frageData.counts.push(frageCounts[frageKey]);
+        frageData.values.push(frageValues[frageKey]);
     });
 
-    // Sort and prepare frage data following the hierarchy
-    const orderedFrageIds = [];
-    
-    // Follow the Bereich -> Aspekt -> Frage hierarchy for ordering
-    Array.from(bereichAspekte.entries()).forEach(([bereich, aspekte]) => {
-        aspekte.forEach(aspekt => {
-            const aspektKey = `${bereich}.${aspekt}`;
-            const fragen = aspektFragen.get(aspektKey);
-            fragen.forEach(frage => {
-                orderedFrageIds.push(`${bereich}.${aspekt}.${frage}`);
-            });
-        });
-    });
-
-    // Use the ordered IDs to build frageData
-    orderedFrageIds.forEach(frageId => {
-        frageData.labels.push(frageId);
-        frageData.counts.push(frageCounts[frageId]);
-        frageData.values.push(frageValues[frageId]);
-    });
-
-    return { 
-        bereichData, 
-        aspektData, 
+    return {
+        bereichData,
+        aspektData,
         frageData,
-        fragen: frageData.labels  
+        fragen: frageData.labels
     };
 }
 
-// GET endpoint for current data
-app.get('/data', (req, res) => {
-    // If we have current data and it's not a reset request, return it
-    if (currentData && !req.query.reset) {
-        return res.json(currentData);
-    }
-
-    // Otherwise, read from default file
-    fs.readFile(defaultDataPath, 'utf-8', (err, fileContent) => {
-        if (err) {
-            console.error('Error reading file:', err);
-            return res.status(500).json({ error: 'Error reading file' });
-        }
-
-        parse(fileContent, {
-            columns: true,
-            skip_empty_lines: true
-        }, (err, results) => {
-            if (err) {
-                console.error('Error parsing CSV:', err);
-                return res.status(500).json({ error: 'Error parsing CSV' });
-            }
-
-            try {
-                // Only update currentData if this is not a reset request
-                const processedData = processCSVData(results);
-                if (!req.query.reset) {
-                    currentData = processedData;
-                }
-                res.json(processedData);
-            } catch (error) {
-                console.error('Error processing data:', error);
-                res.status(500).json({ error: 'Error processing data' });
-            }
-        });
-    });
-});
-
-// POST endpoint for new data
+// POST endpoint for CSV data
 app.post('/data', (req, res) => {
     parse(req.body, {
-        columns: true,
-        skip_empty_lines: true
-    }, (err, results) => {
+        skip_empty_lines: true,
+        from_line: 1,
+        columns: false  // Ensure we get arrays instead of objects
+    }, (err, records) => {
         if (err) {
             console.error('Error parsing CSV:', err);
-            return res.status(500).json({ error: 'Error parsing CSV' });
+            res.status(400).json({ error: 'Invalid CSV format' });
+            return;
         }
 
         try {
-            currentData = processCSVData(results);
+            currentData = processCSVData(records);
             res.json(currentData);
         } catch (error) {
             console.error('Error processing data:', error);
             res.status(500).json({ error: 'Error processing data' });
         }
+    });
+});
+
+// GET endpoint for current data
+app.get('/data', (req, res) => {
+    // If we have current data and it's not a reset request, return it
+    if (currentData && !req.query.reset) {
+        res.json(currentData);
+        return;
+    }
+
+    // Otherwise, load the default data
+    fs.readFile(defaultDataPath, 'utf8', (err, data) => {
+        if (err) {
+            console.error('Error reading default data:', err);
+            res.status(500).json({ error: 'Error reading default data' });
+            return;
+        }
+
+        parse(data, {
+            skip_empty_lines: true,
+            from_line: 1,
+            columns: false  // Ensure we get arrays instead of objects
+        }, (err, records) => {
+            if (err) {
+                console.error('Error parsing default data:', err);
+                res.status(500).json({ error: 'Error parsing default data' });
+                return;
+            }
+
+            try {
+                currentData = processCSVData(records);
+                res.json(currentData);
+            } catch (error) {
+                console.error('Error processing default data:', error);
+                res.status(500).json({ error: 'Error processing default data' });
+            }
+        });
     });
 });
 

@@ -33,6 +33,11 @@ const getSegmentColor = (index, total) => {
     return d3.hsl(hue, 0.5, 0.75);
 };
 
+// Function to extract the last part of a hierarchical label
+function getDisplayLabel(fullLabel) {
+    return fullLabel.split('.').pop();
+}
+
 // Function to draw a ring
 function drawRing(data, innerRadius, outerRadius, className) {
     const svg = d3.select('#chart-container svg');
@@ -74,8 +79,7 @@ function drawRing(data, innerRadius, outerRadius, className) {
     // Add labels
     arcs.each(function(d, i) {
         const fullLabel = data.labels[i];
-        // Extract only the Frage part from the compound label (last part after last dot)
-        const label = fullLabel.split('.').pop();
+        const label = getDisplayLabel(fullLabel);        
         const midRadius = (innerRadius + outerRadius) / 2;
         const textPathId = `textPath-${className}-${i}`;
         const midAngle = (d.startAngle + d.endAngle) / 2;
@@ -101,7 +105,6 @@ function drawRing(data, innerRadius, outerRadius, className) {
             .attr('xlink:href', `#${textPathId}`)
             .attr('startOffset', '50%')
             .attr('text-anchor', 'middle')
-            .attr('dominant-baseline', 'middle')
             .style('font-size', `${fontSize}px`)
             .style('font-family', CONFIG.text.fontFamily)
             .text(label)
@@ -130,7 +133,7 @@ function calculateRingFontSize(data, innerRadius, outerRadius) {
     
     // Test each label
     data.labels.forEach((fullLabel, i) => {
-        const label = fullLabel.split('.').pop();
+        const label = getDisplayLabel(fullLabel); // Use helper function
         temp.text(label);
         
         // Calculate the actual radius for this segment based on its parent
@@ -238,14 +241,15 @@ function drawRadarBackgrounds(parentG, data, scales) {
 }
 
 // Function to draw the radar chart for Frage values
-function drawRadarChart(data, parentG, size) {
+function drawRadarChart(data, parentG, size) {    
     if (!validateRadarData(data)) {
+        console.error('Invalid radar data');
         return;
     }
 
     const radius = calculateRadius() * size;
     const scales = createRadarScales(data, radius);
-    
+
     // Draw in correct order: background -> median -> grid -> points
     drawRadarBackgrounds(parentG, data, scales);
     drawAxisLines(parentG, data, scales);
