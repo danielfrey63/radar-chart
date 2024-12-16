@@ -714,7 +714,7 @@ function getExportResolution() {
                 </div>
                 <div style="text-align: right;">
                     <button type="button" id="cancelExport" style="margin-right: 10px;">Cancel</button>
-                    <button type="submit" id="confirmExport">Export</button>
+                    <button type="submit" id="confirmExport" style="border: 2px solid #333;">Export</button>
                 </div>
             </form>
         `;
