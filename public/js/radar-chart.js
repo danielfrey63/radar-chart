@@ -606,13 +606,23 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // PNG export functionality
-    function exportPNG() {
+    async function exportPNG() {
         try {
             const svgElement = document.querySelector('#chart-container svg');
             if (!svgElement) {
                 alert('No chart found to export');
                 return;
             }
+
+            const defaultWidth = svgElement.width.baseVal.value;
+            const targetWidth = await getExportResolution();
+            
+            if (targetWidth === null) {
+                return; // User cancelled
+            }
+
+            // Calculate scale based on target width
+            const scale = targetWidth / defaultWidth;
 
             // Get SVG data
             const serializer = new XMLSerializer();
@@ -622,17 +632,16 @@ document.addEventListener('DOMContentLoaded', () => {
             // Create canvas
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
-            const scale = 2; // Double resolution
             
-            canvas.width = svgElement.width.baseVal.value * scale;
-            canvas.height = svgElement.height.baseVal.value * scale;
+            canvas.width = defaultWidth * scale;
+            canvas.height = defaultWidth * scale; // Using width as height since it's square
             
             // Create image
             const img = new Image();
             
             img.onload = function() {
                 try {
-                    // Set scale for higher resolution
+                    // Set scale for target resolution
                     ctx.scale(scale, scale);
                     
                     // Draw image
@@ -643,7 +652,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         const url = URL.createObjectURL(blob);
                         const link = document.createElement('a');
                         link.href = url;
-                        link.download = 'radar-chart.png';
+                        link.download = `radar-chart-${targetWidth}px.png`;
                         document.body.appendChild(link);
                         link.click();
                         document.body.removeChild(link);
@@ -664,7 +673,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
         } catch (error) {
             console.error('Error in PNG export:', error);
-            alert('Error exporting to PNG: ' + error.message);
+            alert('Error exporting PNG: ' + error.message);
         }
     }
 
@@ -687,6 +696,51 @@ fetch('/data')
     .catch(error => {
         console.error('Error loading initial data:', error);
     });
+
+function getExportResolution() {
+    return new Promise((resolve) => {
+        const dialog = document.createElement('div');
+        dialog.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); ' +
+            'background: white; padding: 20px; border: 1px solid #ccc; box-shadow: 0 2px 10px rgba(0,0,0,0.1); ' +
+            'z-index: 1000;';
+        
+        dialog.innerHTML = `
+            <form style="margin: 0;">
+                <h3 style="margin-top: 0;">Export Resolution</h3>
+                <div style="margin-bottom: 15px;">
+                    <label for="customSize">Size in pixels:</label>
+                    <input type="number" id="customSize" 
+                        style="width: 100px; margin-left: 5px;" min="100" value="800">
+                </div>
+                <div style="text-align: right;">
+                    <button type="button" id="cancelExport" style="margin-right: 10px;">Cancel</button>
+                    <button type="submit" id="confirmExport">Export</button>
+                </div>
+            </form>
+        `;
+        
+        document.body.appendChild(dialog);
+        
+        const form = dialog.querySelector('form');
+        const customSizeInput = dialog.querySelector('#customSize');
+        
+        // Focus the input field when dialog opens
+        customSizeInput.focus();
+        customSizeInput.select();
+        
+        dialog.querySelector('#cancelExport').addEventListener('click', () => {
+            document.body.removeChild(dialog);
+            resolve(null);
+        });
+        
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const size = parseInt(customSizeInput.value, 10);
+            document.body.removeChild(dialog);
+            resolve(size);
+        });
+    });
+}
 
 function createArcPath(radius, angle, start, end) {
     return `
