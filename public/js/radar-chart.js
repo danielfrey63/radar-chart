@@ -86,13 +86,17 @@ function drawRing(data, innerRadius, outerRadius, className) {
         const segmentAngle = d.endAngle - d.startAngle;
         const isLowerHalf = midAngle > Math.PI/2 && midAngle < 3*Math.PI/2;
 
+        // Calculate baseline offset (approximately half x-height)
+        const baselineOffset = fontSize * 0.35; // Approximate x-height as 70% of font size
+        const adjustedRadius = midRadius + (isLowerHalf ? baselineOffset : -baselineOffset);
+
         // Use 40% of the segment angle on each side (total 80%)
         const arcOffset = segmentAngle * 0.4;
 
         const g = d3.select(this);
         const pathData = isLowerHalf 
-            ? createArcPath(midRadius, midAngle, arcOffset, -arcOffset)
-            : createArcPath(midRadius, midAngle, -arcOffset, arcOffset);
+            ? createArcPath(adjustedRadius, midAngle, arcOffset, -arcOffset)
+            : createArcPath(adjustedRadius, midAngle, -arcOffset, arcOffset);
 
         g.append('path')
             .attr('id', textPathId)
