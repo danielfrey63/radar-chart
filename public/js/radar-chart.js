@@ -82,8 +82,8 @@ function drawRing(data, innerRadius, outerRadius, className) {
         const segmentAngle = d.endAngle - d.startAngle;
         const isLowerHalf = midAngle > Math.PI/2 && midAngle < 3*Math.PI/2;
 
-        // Use 40% of the segment angle for text path, but cap at 0.4 radians
-        const arcOffset = Math.min(segmentAngle * 0.4, 0.4);
+        // Use 40% of the segment angle on each side (total 80%)
+        const arcOffset = segmentAngle * 0.4;
 
         const g = d3.select(this);
         const pathData = isLowerHalf 
