@@ -1,32 +1,43 @@
 # Radar Chart Application Features
 
-## 1. Hierarchical Data Visualization
+## 1. Ring Visualization
 ### Description
-The application visualizes hierarchical data in a circular layout with three levels: level 1, level 2, and level 3.
+A configurable ring visualization that can display segmented data in a circular layout.
+
+### Dependencies
+- Feature 7: Responsive Layout (requires container dimensions)
 
 ### Acceptance Criteria
-- Each level is represented by concentric rings with specific radius ratios:
-  - level 1: outer ring (0.72-0.8 of total radius)
-  - level 2: middle ring (0.65-0.72 of total radius)
-  - level 3: inner ring (0.59-0.65 of total radius)
-- level 1 ring segments are color-coded using HSL color space:
-  - Each segment gets a unique hue value calculated as (index/total_segments * 360)
-  - Saturation fixed at 0.5
-  - Lightness fixed at 0.75
-- Labels are dynamically sized based on available space:
-  - Font size is calculated to fit within segment arc length and ring height
-  - Minimum font size: 6px
-  - Maximum font size: 14px
-  - Font family: Arial
-  - Text is aligned along the middle radius of each ring segment
-  - Text is centered within its segment arc
-  - Text is automatically flipped 180° if it appears in the lower half of the ring to maintain readability
-- Parent-child relationships are visually represented:
-  - Child segments are aligned within the angular span of their parent segment
-  - Segment sizes in level 1 and level 2 are proportional to the count of their contained level 3 elements
-  - All segments of a child level must have a corresponding parent in the level above
+- Ring renderer creates a circular segment with configurable inner and outer radius
+- Segment renderer sizes each segment proportionally to its data value
+- Segment renderer supports configurable color schemes for segments
+- Text renderer calculates font size to fit within segment arc length and ring height
+- Text renderer enforces minimum font size of 6px
+- Text renderer enforces maximum font size of 14px
+- Text renderer uses Arial font family
+- Text renderer aligns text along the middle radius of each ring segment
+- Text renderer centers text within its segment arc
+- Text renderer flips text 180° in lower half of ring for readability
 
-## 2. CSV Data Import
+## 2. Hierarchical Ring Structure
+### Description
+Utilizes the ring visualization to create a three-level hierarchical data display using concentric rings.
+
+### Dependencies
+- Feature 1: Ring Visualization (used for each level)
+- Feature 7: Responsive Layout (requires container dimensions)
+
+### Acceptance Criteria
+- Ring layout positions outer ring (level 1) at 0.72-0.8 of total radius
+- Ring layout positions middle ring (level 2) at 0.65-0.72 of total radius
+- Ring layout positions inner ring (level 3) at 0.59-0.65 of total radius
+- Segment layout aligns child segments within parent segment's angular span
+- Size calculator sets level 1 and 2 segment sizes proportional to their level 3 element count
+- Data validator ensures all child segments have corresponding parent segments
+- Color system assigns level 1 segments HSL colors with hue=(index/total_segments * 360), saturation=0.5, lightness=0.75
+- Color system uses neutral colors for inner rings to maintain focus on level 1 categories
+
+## 3. CSV Data Import
 ### Description
 Users can import custom data through CSV file uploads
 
@@ -39,112 +50,135 @@ domain1,category2,item3,metric2,9
 domain2,category3,item4,metric1,7
 ```
 
-### Acceptance Criteria
-- Accepts CSV files with specific column structure (level 1, level 2, level 3, metric, value)
-- Validates CSV format and data integrity
-- Displays error messages for invalid data
-- Updates visualization immediately after successful import
+### Dependencies
+- Feature 10: Server-Side Data Management (handles data processing)
 
-## 3. Radar Chart Display
+### Acceptance Criteria
+- CSV importer accepts files with specific column structure (level 1, level 2, level 3, metric, value)
+- CSV importer validates CSV format and data integrity
+- CSV importer displays error messages for invalid data
+- CSV importer updates visualization immediately after successful import
+
+## 4. Radar Chart Display
 ### Description
 Inner circle displays a radar chart showing value distributions
 
-### Acceptance Criteria
-- Radar chart structure:
-  - Divided into segments by radial axis lines, one for each metric
-  - Axis lines align with the segment borders of the outer rings (level 1, 2, and 3)
-  - Values are plotted in the areas between two adjacent axis lines
-  - Shows concentric circles for value scales from 0 (center) to 10 (outer edge)
-- Data points are:
-  - Plotted within their corresponding segment between two axis lines
-  - Positioned randomly within their segment to avoid overlapping
-  - Represented as individual dots without connecting lines
+### Dependencies
+- Feature 2: Hierarchical Ring Structure (uses same SVG container and requires ring dimensions)
+- Feature 11: Data Point Background (provides segment backgrounds)
 
-## 4. Export Functionality
+### Acceptance Criteria
+- Radar chart renderer divides chart into segments by radial axis lines
+- Radar chart renderer aligns axis lines with outer ring segment borders
+- Radar chart renderer plots values between axis lines
+- Radar chart renderer shows concentric circles for value scales from 0 (center) to 10 (outer edge)
+- Data point renderer plots points within their corresponding segment
+- Data point renderer positions points randomly within segment to avoid overlapping
+- Data point renderer represents points as individual dots without connecting lines
+
+## 5. Export Functionality
 ### Description
 Allows users to export the visualization in different formats
 
-### Acceptance Criteria
-- Supports SVG export with preserved vector quality
-- Supports PNG export with customizable resolution
-- Maintains all visual elements in exports
-- Provides immediate download of exported files
+### Dependencies
+- Feature 7: Responsive Layout (requires container dimensions)
 
-## 5. Data Reset Capability
+### Acceptance Criteria
+- Exporter supports SVG export with preserved vector quality
+- Exporter supports PNG export with customizable resolution
+- Exporter maintains all visual elements in exports
+- Exporter provides immediate download of exported files
+
+## 6. Data Reset Capability
 ### Description
 Allows users to reset the visualization to default data
 
-### Acceptance Criteria
-- Provides a reset button in the UI
-- Loads default data from server
-- Clears any currently loaded custom data
-- Updates visualization immediately after reset
+### Dependencies
+- Feature 10: Server-Side Data Management (handles default data loading)
 
-## 6. Responsive Layout
+### Acceptance Criteria
+- Reset button is visible in the UI
+- Reset button loads default data from server
+- Reset button clears currently loaded custom data
+- Reset button updates visualization immediately after reset
+
+## 7. Responsive Layout
 ### Description
 Provides a clean, responsive interface for the visualization
 
-### Acceptance Criteria
-- Centers visualization in viewport
-- Maintains aspect ratio of the chart
-- Provides clear button layout for controls
-- Supports standard screen sizes without distortion
+### Dependencies
+- None (base feature)
 
-## 7. Data Processing and Aggregation
+### Acceptance Criteria
+- Layout centers visualization in viewport
+- Layout maintains aspect ratio of the chart
+- Layout provides clear button layout for controls
+- Layout supports standard screen sizes without distortion
+
+## 8. Data Processing and Aggregation
 ### Description
 Processes raw CSV data into hierarchical structure with value aggregation
 
-### Acceptance Criteria
-- Correctly counts occurrences at each level
-- Maintains proper parent-child relationships in data structure
-- Aggregates value distributions for radar chart
-- Handles missing or incomplete data gracefully
+### Dependencies
+- Feature 10: Server-Side Data Management (integrated into server processing)
 
-## 8. Dynamic Text Scaling
+### Acceptance Criteria
+- Data processor correctly counts occurrences at each level
+- Data processor maintains proper parent-child relationships in data structure
+- Data processor aggregates value distributions for radar chart
+- Data processor handles missing or incomplete data gracefully
+
+## 9. Dynamic Text Scaling
 ### Description
 Automatically scales text labels based on available space
 
-### Acceptance Criteria
-- Calculates optimal font size for each ring segment
-- Ensures text remains readable (minimum font size enforced)
-- Handles long labels appropriately
-- Maintains consistent text orientation for readability
-- Ensures all lables are of the same size in each ring
+### Dependencies
+- Feature 1: Ring Visualization (requires ring dimensions and segment sizes)
 
-## 9. Server-Side Data Management
+### Acceptance Criteria
+- Text scaler calculates optimal font size for each ring segment
+- Text scaler enforces minimum font size of 6px
+- Text scaler handles long labels appropriately
+- Text scaler maintains consistent text orientation for readability
+- Text scaler ensures all labels are of the same size in each ring
+
+## 10. Server-Side Data Management
 ### Description
 Manages data state and processing on the server
 
-### Acceptance Criteria
-- Maintains current data state
-- Provides API endpoints for data operations
-- Handles concurrent requests appropriately
-- Returns appropriate error responses for invalid requests
+### Dependencies
+- None (base feature)
 
-## 10. Data Point Background
+### Acceptance Criteria
+- Data manager maintains current data state
+- Data manager provides API endpoints for data operations
+- Data manager handles concurrent requests appropriately
+- Data manager returns appropriate error responses for invalid requests
+
+## 11. Data Point Background
 ### Description
 Each segment in the radar chart has a shaded background that represents the range of data points within that segment
 
-### Acceptance Criteria
-- Background shading characteristics:
-  - Each segment between axis lines has a semi-transparent background
-  - Background color matches the parent level 1 segment color with 50% opacity
-  - Background extends only between the minimum and maximum value points in each segment
-  - Background is bounded by:
-    - Adjacent axis lines radially
-    - Minimum value radius where data points exist
-    - Maximum value radius where data points exist
-- Visual properties:
-  - Color inherited from parent level 1 segment (using HSL color space)
-  - Opacity: 0.5 (50% transparency)
-  - No stroke (border)
+### Dependencies
+- Feature 2: Hierarchical Ring Structure (uses level 1 colors and segments)
 
-## 11. Median Value Visualization
+### Acceptance Criteria
+- Background renderer creates semi-transparent background for each segment
+- Background renderer sets background color to match parent level 1 segment color with 50% opacity
+- Background renderer bounds background by adjacent axis lines radially
+- Background renderer bounds background by minimum value radius where data points exist
+- Background renderer bounds background by maximum value radius where data points exist
+
+## 12. Median Value Visualization
 ### Description
 Displays median values with special indicators and connections
 
+### Dependencies
+- Feature 4: Radar Chart Display (requires radar chart scales and structure)
+- Feature 8: Data Processing and Aggregation (requires processed value data)
+
 ### Acceptance Criteria
-- Calculates and displays median values accurately
-- Shows color-coded indicators for min/max medians
-- Connects median points with gradient lines
-- Updates median display when data changes
+- Median calculator calculates median values accurately
+- Median renderer shows color-coded indicators for min/max medians
+- Median renderer connects median points with gradient lines
+- Median renderer updates median display when data changes
